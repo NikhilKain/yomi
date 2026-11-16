@@ -1,20 +1,32 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
+
 package tachiyomi.presentation.core.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.paddingFromBaseline
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
+import tachiyomi.presentation.core.components.yomi.reveal
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextAlign
@@ -53,7 +65,6 @@ fun EmptyScreen(
     modifier: Modifier = Modifier,
     actions: List<EmptyScreenAction>? = null,
 ) {
-    val face = remember { getRandomErrorFace() }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -62,20 +73,25 @@ fun EmptyScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-            Text(
-                text = face,
-                modifier = Modifier.secondaryItemAlpha(),
-                style = MaterialTheme.typography.displayMedium,
+        Box(
+            Modifier.reveal().size(96.dp).clip(MaterialShapes.Flower.toShape())
+                .background(MaterialTheme.colorScheme.secondaryContainer),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                Icons.AutoMirrored.Rounded.MenuBook,
+                null,
+                Modifier.size(44.dp),
+                tint = MaterialTheme.colorScheme.onSecondaryContainer,
             )
         }
 
         Text(
             text = message,
             modifier = Modifier
-                .paddingFromBaseline(top = 24.dp)
-                .secondaryItemAlpha(),
-            style = MaterialTheme.typography.bodyMedium,
+                .reveal(1)
+                .paddingFromBaseline(top = 40.dp),
+            style = MaterialTheme.typography.titleLarge,
             textAlign = TextAlign.Center,
         )
 
@@ -96,23 +112,4 @@ fun EmptyScreen(
             }
         }
     }
-}
-
-private val ErrorFaces = listOf(
-    "(･o･;)",
-    "Σ(ಠ_ಠ)",
-    "ಥ_ಥ",
-    "(˘･_･˘)",
-    "(；￣Д￣)",
-    "(･Д･。",
-    "(╬ಠ益ಠ)",
-    "(╥﹏╥)",
-    "(⋟﹏⋞)",
-    "Ò︵Ó",
-    " ˙ᯅ˙)",
-    "(¬_¬)",
-)
-
-private fun getRandomErrorFace(): String {
-    return ErrorFaces[Random.nextInt(ErrorFaces.size)]
 }

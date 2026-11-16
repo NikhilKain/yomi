@@ -4,6 +4,14 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -40,14 +48,18 @@ fun DefaultNavigatorScreenTransition(
     navigator: Navigator,
     modifier: Modifier = Modifier,
 ) {
-    val slideDistance = rememberSlideDistance()
     ScreenTransition(
         navigator = navigator,
         transition = {
-            materialSharedAxisX(
-                forward = navigator.lastEvent != StackEvent.Pop,
-                slideDistance = slideDistance,
-            )
+            val forward = navigator.lastEvent != StackEvent.Pop
+            (
+                fadeIn(tween(140)) + scaleIn(tween(220), initialScale = if (forward) .96f else 1.02f) +
+                    slideInVertically(tween(220)) { if (forward) it / 16 else -it / 20 }
+                ) togetherWith
+                (
+                    fadeOut(tween(100)) + scaleOut(tween(160), targetScale = if (forward) 1.02f else .96f) +
+                        slideOutVertically(tween(160)) { if (forward) -it / 20 else it / 16 }
+                    )
         },
         modifier = modifier,
     )

@@ -33,6 +33,25 @@ class PagerConfig(
 
     var dualPageSplitChangedListener: ((Boolean) -> Unit)? = null
 
+    var pageFlipChangedListener: ((Boolean) -> Unit)? = null
+
+    /** Fired when the pages have to be regrouped, which means rebuilding the adapter's items. */
+    var bookModeChangedListener: (() -> Unit)? = null
+
+    var pageFlipSpeedChangedListener: ((Int) -> Unit)? = null
+
+    var pageFlip = false
+        private set
+
+    var pageFlipSpeed = FlipScroller.DEFAULT_SPEED
+        private set
+
+    var bookMode = false
+        private set
+
+    var bookModeCoverAlone = true
+        private set
+
     var imageScaleType = 1
         private set
 
@@ -106,6 +125,18 @@ class PagerConfig(
                 { dualPageRotateToFitInvert = it },
                 { imagePropertyChangedListener?.invoke() },
             )
+
+        readerPreferences.pageFlipAnimation
+            .register({ pageFlip = it }, { pageFlipChangedListener?.invoke(it) })
+
+        readerPreferences.pageFlipSpeed
+            .register({ pageFlipSpeed = it }, { pageFlipSpeedChangedListener?.invoke(it) })
+
+        readerPreferences.bookModeLandscape
+            .register({ bookMode = it }, { bookModeChangedListener?.invoke() })
+
+        readerPreferences.bookModeCoverAlone
+            .register({ bookModeCoverAlone = it }, { bookModeChangedListener?.invoke() })
     }
 
     private fun zoomTypeFromPreference(value: Int) {

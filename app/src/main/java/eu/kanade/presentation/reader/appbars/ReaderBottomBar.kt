@@ -5,7 +5,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,31 +32,31 @@ fun ReaderBottomBar(
     Row(
         modifier = modifier
             .pointerInput(Unit) {},
-        horizontalArrangement = Arrangement.SpaceEvenly,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(onClick = onClickReadingMode) {
+        FilledTonalIconButton(onClick = onClickReadingMode) {
             Icon(
                 painter = painterResource(readingMode.iconRes),
                 contentDescription = stringResource(MR.strings.viewer),
             )
         }
 
-        IconButton(onClick = onClickOrientation) {
+        FilledTonalIconButton(onClick = onClickOrientation) {
             Icon(
                 imageVector = orientation.icon,
                 contentDescription = stringResource(MR.strings.rotation_type),
             )
         }
 
-        IconButton(onClick = onClickCropBorder) {
+        FilledTonalIconButton(onClick = onClickCropBorder) {
             Icon(
                 painter = painterResource(if (cropEnabled) R.drawable.ic_crop_24dp else R.drawable.ic_crop_off_24dp),
                 contentDescription = stringResource(MR.strings.pref_crop_borders),
             )
         }
 
-        IconButton(onClick = onClickSettings) {
+        FilledTonalIconButton(onClick = onClickSettings) {
             Icon(
                 imageVector = Icons.Outlined.Settings,
                 contentDescription = stringResource(MR.strings.action_settings),

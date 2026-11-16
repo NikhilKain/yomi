@@ -1,5 +1,6 @@
 package tachiyomi.presentation.core.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +35,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -42,6 +48,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -149,9 +156,14 @@ fun CheckboxItem(label: String, checked: Boolean, onClick: () -> Unit) {
     BaseSettingsItem(
         label = label,
         widget = {
-            Checkbox(
+            Switch(
                 checked = checked,
                 onCheckedChange = null,
+                thumbContent = if (checked) {
+                    { Icon(Icons.Rounded.Check, null, Modifier.size(SwitchDefaults.IconSize)) }
+                } else {
+                    null
+                },
             )
         },
         onClick = onClick,
@@ -339,6 +351,9 @@ fun TriStateItem(
 ) {
     Row(
         modifier = Modifier
+            .padding(horizontal = 12.dp, vertical = 2.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .clickable(
                 enabled = enabled && onClick != null,
                 onClick = {
@@ -350,12 +365,10 @@ fun TriStateItem(
                 },
             )
             .fillMaxWidth()
-            .padding(
-                horizontal = SettingsItemsPaddings.Horizontal,
-                vertical = SettingsItemsPaddings.Vertical,
-            ),
+            .heightIn(min = 56.dp)
+            .padding(horizontal = 20.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.large),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         val stateAlpha = if (enabled && onClick != null) 1f else DISABLED_ALPHA
 
@@ -378,7 +391,7 @@ fun TriStateItem(
         Text(
             text = label,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = stateAlpha),
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodyLarge,
         )
     }
 }
@@ -398,7 +411,10 @@ fun TextItem(label: String, value: String, onChange: (String) -> Unit) {
 
 @Composable
 fun SettingsChipRow(labelRes: StringResource, content: @Composable FlowRowScope.() -> Unit) {
-    Column {
+    Column(
+        Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+            .clip(MaterialTheme.shapes.large).background(MaterialTheme.colorScheme.surfaceContainerLow),
+    ) {
         HeadingItem(labelRes)
         FlowRow(
             modifier = Modifier.padding(
@@ -415,17 +431,20 @@ fun SettingsChipRow(labelRes: StringResource, content: @Composable FlowRowScope.
 
 @Composable
 fun SettingsIconGrid(labelRes: StringResource, content: LazyGridScope.() -> Unit) {
-    Column {
+    Column(
+        Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+            .clip(MaterialTheme.shapes.large).background(MaterialTheme.colorScheme.surfaceContainerLow),
+    ) {
         HeadingItem(labelRes)
         LazyVerticalGrid(
-            columns = GridCells.Adaptive(128.dp),
+            columns = GridCells.Adaptive(104.dp),
             modifier = Modifier.padding(
-                start = SettingsItemsPaddings.Horizontal,
-                end = SettingsItemsPaddings.Horizontal,
-                bottom = SettingsItemsPaddings.Vertical,
+                start = 16.dp,
+                end = 16.dp,
+                bottom = 16.dp,
             ),
-            verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
-            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             content = content,
         )
     }
@@ -439,19 +458,21 @@ private fun BaseSettingsItem(
 ) {
     Row(
         modifier = Modifier
+            .padding(horizontal = 12.dp, vertical = 2.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .clickable(onClick = onClick)
             .fillMaxWidth()
-            .padding(
-                horizontal = SettingsItemsPaddings.Horizontal,
-                vertical = SettingsItemsPaddings.Vertical,
-            ),
+            .heightIn(min = 56.dp)
+            .padding(horizontal = 20.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(24.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        widget(this)
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f),
         )
+        widget(this)
     }
 }

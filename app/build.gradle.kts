@@ -24,27 +24,41 @@ if (Config.includeTelemetry) {
     }
 }
 
+val yomiValidation = providers.gradleProperty("yomiValidation").map(String::toBoolean).orElse(false).get()
+
+// Side-by-side test builds can be shrunk and compiled like a release, so they feel like the real app.
+val yomiOptimized = providers.gradleProperty("yomiOptimized").map(String::toBoolean).orElse(false).get()
+
 val keystorePropertiesFile = rootProject.file("keystore.properties")
 
 android {
     namespace = "eu.kanade.tachiyomi"
 
     defaultConfig {
-        applicationId = "app.mihon"
+        applicationId = if (yomiValidation) "com.manga.yomi.validation" else "com.manga.yomi"
 
-        versionCode = 29
-        versionName = "0.20.4"
+        versionCode = 40
+        versionName = "1.0.0"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getLatestCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getLatestCommitSha()}\"")
         buildConfigField("String", "BUILD_TIME", "\"${getBuildTime(useLatestCommitTime = false)}\"")
         buildConfigField("boolean", "TELEMETRY_INCLUDED", "${Config.includeTelemetry}")
-        buildConfigField("boolean", "UPDATER_ENABLED", "${Config.enableUpdater}")
+        buildConfigField("boolean", "UPDATER_ENABLED", "false")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    if (System.getenv("MIHON_GITHUB_RELEASE").toBoolean()) {
+    if (providers.environmentVariable("YOMI_STORE_FILE").isPresent) {
+        signingConfigs {
+            named("debug") {
+                storeFile = file(providers.environmentVariable("YOMI_STORE_FILE").get())
+                storePassword = providers.environmentVariable("YOMI_STORE_PASSWORD").get()
+                keyAlias = providers.environmentVariable("YOMI_KEY_ALIAS").get()
+                keyPassword = providers.environmentVariable("YOMI_KEY_PASSWORD").get()
+            }
+        }
+    } else if (System.getenv("MIHON_GITHUB_RELEASE").toBoolean()) {
         val tempStoreFile = file(System.getenv("RUNNER_TEMP")).resolve("antsy.keystore")
 
         val storeFileBytes = System.getenv("storeFileBase64").let(Base64::decode)
@@ -75,7 +89,13 @@ android {
         val debug = getByName("debug") {
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-${getLatestCommitCount()}"
-            isPseudoLocalesEnabled = true
+            isPseudoLocalesEnabled = !yomiOptimized
+            if (yomiOptimized) {
+                isDebuggable = false
+                isMinifyEnabled = true
+                isProfileable = true
+                proguardFiles("proguard-android-optimize.txt", "proguard-rules.pro")
+            }
         }
         val release = getByName("release") {
             isMinifyEnabled = true

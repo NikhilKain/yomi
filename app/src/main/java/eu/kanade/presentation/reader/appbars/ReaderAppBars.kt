@@ -1,6 +1,7 @@
 package eu.kanade.presentation.reader.appbars
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -25,10 +26,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
@@ -39,7 +42,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import tachiyomi.presentation.core.components.material.padding
 
-private val readerBarsSlideAnimationSpec = tween<IntOffset>(200)
+private val readerBarsSlideAnimationSpec = spring<IntOffset>(dampingRatio = 0.88f, stiffness = 380f)
 private val readerBarsFadeAnimationSpec = tween<Float>(150)
 
 @Composable
@@ -75,9 +78,8 @@ fun ReaderAppBars(
     onClickCropBorder: () -> Unit,
     onClickSettings: () -> Unit,
 ) {
-    val backgroundColor = MaterialTheme.colorScheme
-        .surfaceColorAtElevation(3.dp)
-        .copy(alpha = if (isSystemInDarkTheme()) 0.9f else 0.95f)
+    val backgroundColor = MaterialTheme.colorScheme.surfaceContainerHighest
+        .copy(alpha = if (isSystemInDarkTheme()) 0.94f else 0.97f)
 
     Column(modifier = Modifier.fillMaxHeight()) {
         AnimatedVisibility(
@@ -87,6 +89,8 @@ fun ReaderAppBars(
         ) {
             ReaderTopBar(
                 modifier = Modifier
+                    .padding(horizontal = 12.dp)
+                    .clip(MaterialTheme.shapes.extraLarge)
                     .background(backgroundColor)
                     .clickable(onClick = onClickTopAppBar),
                 mangaTitle = mangaTitle,
@@ -146,7 +150,10 @@ fun ReaderAppBars(
             enter = slideInVertically(readerBarsSlideAnimationSpec) { it } + fadeIn(readerBarsFadeAnimationSpec),
             exit = slideOutVertically(readerBarsSlideAnimationSpec) { it } + fadeOut(readerBarsFadeAnimationSpec),
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small)) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
                 if (chapterNavigatorType.isHorizontal()) {
                     ChapterNavigator(
                         type = chapterNavigatorType,
@@ -162,10 +169,11 @@ fun ReaderAppBars(
                 }
                 ReaderBottomBar(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .windowInsetsPadding(WindowInsets.navigationBars)
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                        .clip(CircleShape)
                         .background(backgroundColor)
-                        .padding(horizontal = MaterialTheme.padding.small)
-                        .windowInsetsPadding(WindowInsets.navigationBars),
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
                     readingMode = readingMode,
                     onClickReadingMode = onClickReadingMode,
                     orientation = orientation,

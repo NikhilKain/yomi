@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.reader.viewer.pager
 
+import android.content.res.Configuration
 import android.graphics.PointF
 import android.view.InputDevice
 import android.view.KeyEvent
@@ -15,6 +16,7 @@ import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.reader.model.ChapterTransition
 import eu.kanade.tachiyomi.ui.reader.model.InsertPage
+import eu.kanade.tachiyomi.ui.reader.model.PageSpread
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.viewer.Viewer
@@ -52,9 +54,32 @@ abstract class PagerViewer(val activity: ReaderActivity) : Viewer {
     private val adapter = PagerViewerAdapter(this)
 
     /**
-     * Currently active item. It can be a chapter page or a chapter transition.
+     * Currently active item. It can be a chapter page, a facing spread, or a chapter transition.
      */
     private var currentPage: Any? = null
+
+    /**
+     * Last chapters handed to the adapter, kept so the items can be rebuilt when the grouping
+     * changes underneath them — a rotation into landscape, or book mode being switched on.
+     */
+    private var lastChapters: ViewerChapters? = null
+
+    /**
+     * Replaces the pager's scroller so the turn duration can be scaled. Null when the pager would
+     * not give it up, in which case turns simply run at the stock speed.
+     */
+    private var flipScroller: FlipScroller? = null
+
+    /**
+     * Whether pages are currently laid out as facing spreads.
+     *
+     * Book mode is a landscape idea: two pages side by side in portrait would be two postage
+     * stamps, so the preference is honoured only when there is width to spend.
+     */
+    val isBookMode: Boolean
+        get() = config.bookMode &&
+            activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE &&
+            this !is VerticalPagerViewer
 
     /**
      * Viewer chapters to set when the pager enters idle mode. Otherwise, if the view was settling
@@ -143,6 +168,91 @@ abstract class PagerViewer(val activity: ReaderActivity) : Viewer {
             val showOnStart = config.navigationOverlayOnStart || config.forceNavigationOverlay
             activity.binding.navigationOverlay.setNavigation(config.navigator, showOnStart)
         }
+
+        config.pageFlipChangedListener = { applyPageFlip(it) }
+        config.pageFlipSpeedChangedListener = { flipScroller?.speedPercent = it }
+        config.bookModeChangedListener = { regroupItems() }
+
+        // Rotating between portrait and landscape changes whether pages are paired at all, and the
+        // reader handles its own configuration changes, so nothing else would rebuild the items.
+        pager.configurationChangedListener = { regroupItems() }
+
+        flipScroller = FlipScroller.install(pager)?.also { it.speedPercent = config.pageFlipSpeed }
+        applyPageFlip(config.pageFlip)
+    }
+
+    /**
+     * Installs or removes the page turn animation.
+     *
+     * Skipped entirely on a vertical pager, which already relies on a transformer of its own to
+     * scroll vertically; replacing it would stop paging rather than decorate it.
+     */
+    private fun applyPageFlip(enabled: Boolean) {
+        if (this is VerticalPagerViewer) return
+
+        if (!enabled) {
+            pager.setPageTransformer(false, null)
+            PageFlipTransformer.clear(pager)
+            BookFlipTransformer.clear(pager)
+            return
+        }
+
+        // Two different animations, because two different objects are moving. With pages paired
+        // into openings the thing that turns is one leaf hinged on the spine, carrying a different
+        // page on each side; with a single page per screen there is no spine, so the whole page
+        // turns on its outer edge.
+        val isRtl = this is R2LPagerViewer
+        val transformer = if (isBookMode) {
+            BookFlipTransformer(isRtl)
+        } else {
+            PageFlipTransformer(isRtl)
+        }
+
+        // The page being turned has to paint above the one it uncovers, and which of the two that
+        // is flips with reading direction. A manga's items are reversed so that reading forward
+        // walks *down* the pager, which puts the page being left behind at a higher position
+        // instead of a lower one — so asking for the reverse order there paints the turning page
+        // underneath the one it is supposed to be covering.
+        pager.setPageTransformer(!isRtl, transformer)
+    }
+
+    /**
+     * Rebuilds the adapter items after the page grouping changes, holding the reader's place.
+     *
+     * The anchor is taken before the rebuild because the item currently on screen may not survive
+     * it: a page that was half of a spread becomes a standalone item, and vice versa.
+     */
+    private fun regroupItems() {
+        val chapters = lastChapters ?: return
+        val anchor = currentPage.readerPage()
+
+        pager.removeOnPageChangeListener(pagerListener)
+        adapter.setChapters(chapters, config.alwaysShowChapterTransition)
+
+        // A null anchor means the reader is sitting on a chapter transition, which is not grouped
+        // and so keeps whatever position it lands on.
+        val position = anchor?.let(adapter::positionOf) ?: -1
+        if (position != -1) {
+            pager.setCurrentItem(position, false)
+        }
+        pager.addOnPageChangeListener(pagerListener)
+
+        // Whether pages are paired decides which animation applies, and that is exactly what just
+        // changed — a rotation into landscape, or book mode being switched on.
+        applyPageFlip(config.pageFlip)
+
+        currentPage = null
+        onPageChange(pager.currentItem)
+    }
+
+    /**
+     * The page an item stands for, so progress, preload and history keep working in pages and never
+     * have to learn what a spread is.
+     */
+    private fun Any?.readerPage(): ReaderPage? = when (this) {
+        is ReaderPage -> this
+        is PageSpread -> progressPage
+        else -> null
     }
 
     override fun destroy() {
@@ -166,36 +276,43 @@ abstract class PagerViewer(val activity: ReaderActivity) : Viewer {
      * Returns the PagerPageHolder for the provided page
      */
     private fun getPageHolder(page: ReaderPage): PagerPageHolder? =
-        pager.children
-            .filterIsInstance(PagerPageHolder::class.java)
-            .firstOrNull { it.item == page }
+        pager.children.firstNotNullOfOrNull { child ->
+            when (child) {
+                is PagerPageHolder -> child.takeIf { it.item == page }
+                // In book mode the page holders are one level down, inside the spread.
+                is PagerSpreadHolder -> child.holderFor(page)
+                else -> null
+            }
+        }
 
     /**
      * Called when a new page (either a [ReaderPage] or [ChapterTransition]) is marked as active
      */
     private fun onPageChange(position: Int) {
-        val page = adapter.items.getOrNull(position)
-        if (page != null && currentPage != page) {
-            val allowPreload = checkAllowPreload(page as? ReaderPage)
-            val forward = when {
-                currentPage is ReaderPage && page is ReaderPage -> {
-                    // if both pages have the same number, it's a split page with an InsertPage
-                    if (page.number == (currentPage as ReaderPage).number) {
-                        // the InsertPage is always the second in the reading direction
-                        page is InsertPage
-                    } else {
-                        page.number > (currentPage as ReaderPage).number
-                    }
+        val item = adapter.items.getOrNull(position)
+        if (item == null || currentPage == item) return
+
+        val selected = item.readerPage()
+        val previous = currentPage.readerPage()
+
+        val allowPreload = checkAllowPreload(selected)
+        val forward = when {
+            previous != null && selected != null -> {
+                // if both pages have the same number, it's a split page with an InsertPage
+                if (selected.number == previous.number) {
+                    // the InsertPage is always the second in the reading direction
+                    selected is InsertPage
+                } else {
+                    selected.number > previous.number
                 }
-                currentPage is ChapterTransition.Prev && page is ReaderPage ->
-                    false
-                else -> true
             }
-            currentPage = page
-            when (page) {
-                is ReaderPage -> onReaderPageSelected(page, allowPreload, forward)
-                is ChapterTransition -> onTransitionSelected(page)
-            }
+            currentPage is ChapterTransition.Prev && selected != null -> false
+            else -> true
+        }
+        currentPage = item
+        when {
+            selected != null -> onReaderPageSelected(selected, allowPreload, forward)
+            item is ChapterTransition -> onTransitionSelected(item)
         }
     }
 
@@ -227,8 +344,16 @@ abstract class PagerViewer(val activity: ReaderActivity) : Viewer {
         logcat { "onReaderPageSelected: ${page.number}/${pages.size}" }
         activity.onPageSelected(page)
 
-        // Notify holder of page change
-        getPageHolder(page)?.onPageSelected(forward)
+        // Notify holder of page change. In book mode both halves are equally on screen, so both
+        // are told, not just the one standing in for the reader's position.
+        when (val item = currentPage) {
+            is PageSpread ->
+                pager.children
+                    .filterIsInstance<PagerSpreadHolder>()
+                    .firstOrNull { it.item == item }
+                    ?.onPageSelected(forward)
+            else -> getPageHolder(page)?.onPageSelected(forward)
+        }
 
         // Skip preload on inserts it causes unwanted page jumping
         if (page is InsertPage) {
@@ -275,6 +400,8 @@ abstract class PagerViewer(val activity: ReaderActivity) : Viewer {
      * Sets the active [chapters] on this pager.
      */
     private fun setChaptersInternal(chapters: ViewerChapters) {
+        lastChapters = chapters
+
         // Remove listener so the change in item doesn't trigger it
         pager.removeOnPageChangeListener(pagerListener)
 
@@ -299,7 +426,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : Viewer {
      * Tells this viewer to move to the given [page].
      */
     override fun moveToPage(page: ReaderPage) {
-        val position = adapter.items.indexOf(page)
+        val position = adapter.positionOf(page)
         if (position != -1) {
             val currentPosition = pager.currentItem
             pager.setCurrentItem(position, true)

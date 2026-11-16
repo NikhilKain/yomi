@@ -4,7 +4,13 @@
     <img src="./.github/assets/logo.png" alt="Mihon logo" title="Mihon logo" width="80"/>
 </a>
 
-# Mihon [App](#)
+# Yomi
+
+An independent Android reader fork of Mihon with Hanami-inspired presentation,
+Drive sync, animated page turns and book spreads. See the [Yomi build and
+migration notes](docs/YOMI.md) and [Drive sync setup](SYNC_SETUP.md).
+
+The original Mihon project information and credits follow.
 
 ### Full-featured reader
 Discover and read manga, webtoons, comics, and more – easier than ever on your Android device.

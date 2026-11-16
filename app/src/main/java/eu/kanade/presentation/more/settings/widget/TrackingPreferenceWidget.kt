@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import eu.kanade.presentation.components.yomiPanel
 import eu.kanade.presentation.more.settings.LocalPreferenceHighlighted
 import eu.kanade.presentation.track.components.TrackLogoIcon
 import eu.kanade.tachiyomi.data.track.Tracker
@@ -35,7 +36,7 @@ fun TrackingPreferenceWidget(
     val highlighted = LocalPreferenceHighlighted.current
     Box(modifier = Modifier.highlightBackground(highlighted)) {
         Row(
-            modifier = modifier
+            modifier = modifier.padding(horizontal = 16.dp, vertical = 3.dp).yomiPanel()
                 .clickable(enabled = onClick != null, onClick = { onClick?.invoke() })
                 .fillMaxWidth()
                 .padding(horizontal = PrefsHorizontalPadding, vertical = 8.dp),

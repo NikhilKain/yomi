@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
+
 package tachiyomi.presentation.core.screens
 
 import androidx.compose.foundation.background
@@ -15,12 +17,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Newspaper
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.toShape
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material3.ButtonDefaults
+import tachiyomi.presentation.core.components.yomi.reveal
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -46,38 +54,28 @@ fun InfoScreen(
 ) {
     Scaffold(
         bottomBar = {
-            val strokeWidth = Dp.Hairline
-            val borderColor = MaterialTheme.colorScheme.outline
             Column(
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.background)
-                    .drawBehind {
-                        drawLine(
-                            borderColor,
-                            Offset(0f, 0f),
-                            Offset(size.width, 0f),
-                            strokeWidth.value,
-                        )
-                    }
                     .windowInsetsPadding(NavigationBarDefaults.windowInsets)
-                    .padding(
-                        horizontal = MaterialTheme.padding.medium,
-                        vertical = MaterialTheme.padding.small,
-                    ),
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Button(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().height(ButtonDefaults.MediumContainerHeight),
                     enabled = canAccept,
+                    shapes = ButtonDefaults.shapes(),
                     onClick = onAcceptClick,
                 ) {
-                    Text(text = acceptText)
+                    Text(text = acceptText, style = ButtonDefaults.textStyleFor(ButtonDefaults.MediumContainerHeight))
                 }
                 if (rejectText != null && onRejectClick != null) {
                     OutlinedButton(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().height(ButtonDefaults.MediumContainerHeight),
+                        shapes = ButtonDefaults.shapes(),
                         onClick = onRejectClick,
                     ) {
-                        Text(text = rejectText)
+                        Text(text = rejectText, style = ButtonDefaults.textStyleFor(ButtonDefaults.MediumContainerHeight))
                     }
                 }
             }
@@ -98,27 +96,32 @@ fun InfoScreen(
                 .verticalScroll(rememberScrollState())
                 .fillMaxWidth()
                 .padding(paddingValues)
-                .padding(top = 48.dp)
-                .padding(horizontal = MaterialTheme.padding.medium),
+                .padding(top = 40.dp)
+                .padding(horizontal = 20.dp),
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier
-                    .padding(bottom = MaterialTheme.padding.small)
-                    .size(48.dp),
-                tint = MaterialTheme.colorScheme.primary,
+                    .reveal()
+                    .padding(bottom = 20.dp)
+                    .size(96.dp)
+                    .clip(MaterialShapes.Flower.toShape())
+                    .background(MaterialTheme.colorScheme.primaryContainer).padding(24.dp),
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
             )
             Text(
                 text = headingText,
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.displayMedium,
+                modifier = Modifier.reveal(1),
             )
             Text(
                 text = subtitleText,
                 modifier = Modifier
-                    .secondaryItemAlpha()
-                    .padding(vertical = MaterialTheme.padding.small),
-                style = MaterialTheme.typography.titleSmall,
+                    .reveal(2)
+                    .padding(top = 8.dp, bottom = 20.dp),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             content()

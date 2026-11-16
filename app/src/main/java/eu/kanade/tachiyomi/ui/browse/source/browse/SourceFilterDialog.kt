@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.AdaptiveSheet
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
+import tachiyomi.presentation.core.components.yomi.SoftGap
 import tachiyomi.core.common.preference.TriState
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.CheckboxItem
@@ -66,7 +67,7 @@ fun SourceFilterDialog(
                         Text(stringResource(MR.strings.action_filter))
                     }
                 }
-                HorizontalDivider()
+                SoftGap()
             }
 
             items(filters) {
@@ -83,7 +84,7 @@ private fun FilterItem(filter: Filter<*>, onUpdate: () -> Unit) {
             HeadingItem(filter.name)
         }
         is Filter.Separator -> {
-            HorizontalDivider()
+            SoftGap()
         }
         is Filter.CheckBox -> {
             CheckboxItem(

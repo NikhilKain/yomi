@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import eu.kanade.presentation.components.yomiPanel
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.presentation.core.components.material.padding
 
@@ -29,6 +30,8 @@ fun BaseMangaListItem(
 ) {
     Row(
         modifier = modifier
+            .padding(horizontal = 16.dp, vertical = 3.dp)
+            .yomiPanel()
             .clickable(onClick = onClickItem)
             .height(56.dp)
             .padding(horizontal = MaterialTheme.padding.medium),

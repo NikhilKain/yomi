@@ -14,6 +14,12 @@ data class BackupOptions(
     val extensionStores: Boolean = true,
     val sourceSettings: Boolean = true,
     val privateSettings: Boolean = false,
+    /**
+     * Carry entries the user has removed from their library so the removal itself is part of the
+     * payload. Sync-only, and deliberately absent from [asBooleanArray] and the backup UI: a
+     * hand-made backup should contain a library, not a graveyard.
+     */
+    val unfavoriteTombstones: Boolean = false,
 ) {
 
     fun asBooleanArray() = booleanArrayOf(

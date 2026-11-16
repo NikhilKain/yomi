@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import eu.kanade.presentation.more.stats.components.StatsItem
 import eu.kanade.presentation.more.stats.components.StatsOverviewItem
@@ -66,6 +67,7 @@ private fun LazyItemScope.OverviewSection(
     SectionCard(MR.strings.label_overview_section) {
         Row(
             modifier = Modifier.height(IntrinsicSize.Min),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             StatsOverviewItem(
                 title = data.libraryMangaCount.toString(),
@@ -91,7 +93,10 @@ private fun LazyItemScope.TitlesStats(
     data: StatsData.Titles,
 ) {
     SectionCard(MR.strings.label_titles_section) {
-        Row {
+        Row(
+            modifier = Modifier.height(IntrinsicSize.Min),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             StatsItem(
                 data.globalUpdateItemCount.toString(),
                 stringResource(MR.strings.label_titles_in_global_update),
@@ -113,7 +118,10 @@ private fun LazyItemScope.ChapterStats(
     data: StatsData.Chapters,
 ) {
     SectionCard(MR.strings.chapters) {
-        Row {
+        Row(
+            modifier = Modifier.height(IntrinsicSize.Min),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             StatsItem(
                 data.totalChapterCount.toString(),
                 stringResource(MR.strings.label_total_chapters),
@@ -144,7 +152,10 @@ private fun LazyItemScope.TrackerStats(
         }
     }
     SectionCard(MR.strings.label_tracker_section) {
-        Row {
+        Row(
+            modifier = Modifier.height(IntrinsicSize.Min),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             StatsItem(
                 data.trackedTitleCount.toString(),
                 stringResource(MR.strings.label_tracked_titles),

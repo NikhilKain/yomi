@@ -16,13 +16,13 @@ fun PreferenceGroupHeader(title: String) {
         contentAlignment = Alignment.CenterStart,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 8.dp, top = 14.dp),
+            .padding(bottom = 10.dp, top = 24.dp),
     ) {
         Text(
             text = title,
-            color = MaterialTheme.colorScheme.secondary,
-            modifier = Modifier.padding(horizontal = PrefsHorizontalPadding),
-            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(horizontal = 28.dp),
+            style = MaterialTheme.typography.titleMedium,
         )
     }
 }

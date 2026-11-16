@@ -30,6 +30,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.runtime.CompositionLocalProvider
+import tachiyomi.presentation.core.components.yomi.LocalGroupPosition
+import tachiyomi.presentation.core.components.yomi.groupPosition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -199,17 +203,18 @@ private fun ExtensionContent(
                 }
             }
 
-            items(
+            itemsIndexed(
                 items = items,
-                contentType = { "item" },
-                key = { item ->
+                contentType = { _, _ -> "item" },
+                key = { _, item ->
                     when (item.extension) {
                         is Extension.Untrusted -> "extension-untrusted-${item.hashCode()}"
                         is Extension.Installed -> "extension-installed-${item.hashCode()}"
                         is Extension.Available -> "extension-available-${item.hashCode()}"
                     }
                 },
-            ) { item ->
+            ) { index, item ->
+                CompositionLocalProvider(LocalGroupPosition provides groupPosition(index, items.size)) {
                 ExtensionItem(
                     modifier = Modifier.animateItem(),
                     item = item,
@@ -247,6 +252,7 @@ private fun ExtensionContent(
                         }
                     },
                 )
+                }
             }
         }
     }
@@ -343,7 +349,7 @@ private fun ExtensionItemContent(
             text = extension.name,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.titleMedium,
         )
         // Won't look good but it's not like we can ellipsize overflowing content
         FlowRow(
@@ -510,15 +516,15 @@ private fun ExtensionHeader(
     action: @Composable RowScope.() -> Unit = {},
 ) {
     Row(
-        modifier = modifier.padding(horizontal = MaterialTheme.padding.medium),
+        modifier = modifier.padding(start = 28.dp, end = 16.dp, top = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = text,
             modifier = Modifier
-                .padding(vertical = 8.dp)
+                .padding(vertical = 10.dp)
                 .weight(1f),
-            style = MaterialTheme.typography.header,
+            style = MaterialTheme.typography.titleMedium,
         )
         action()
     }

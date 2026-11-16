@@ -17,6 +17,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.foundation.lazy.itemsIndexed
+import tachiyomi.presentation.core.components.yomi.LocalGroupPosition
+import tachiyomi.presentation.core.components.yomi.groupPositionOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -56,21 +60,23 @@ fun SourcesScreen(
             ScrollbarLazyColumn(
                 contentPadding = contentPadding + topSmallPaddingValues,
             ) {
-                items(
+                itemsIndexed(
                     items = state.items,
-                    contentType = {
+                    contentType = { _, it ->
                         when (it) {
                             is SourceUiModel.Header -> "header"
                             is SourceUiModel.Item -> "item"
                         }
                     },
-                    key = {
+                    key = { _, it ->
                         when (it) {
                             is SourceUiModel.Header -> it.hashCode()
                             is SourceUiModel.Item -> "source-${it.source.key()}"
                         }
                     },
-                ) { model ->
+                ) { index, model ->
+                    val position = groupPositionOf(state.items, index) { it is SourceUiModel.Item }
+                    CompositionLocalProvider(LocalGroupPosition provides position) {
                     when (model) {
                         is SourceUiModel.Header -> {
                             SourceHeader(
@@ -86,6 +92,7 @@ fun SourcesScreen(
                             onClickPin = onClickPin,
                         )
                     }
+                    }
                 }
             }
         }
@@ -100,9 +107,8 @@ private fun SourceHeader(
     val context = LocalContext.current
     Text(
         text = LocaleHelper.getSourceDisplayName(language, context),
-        modifier = modifier
-            .padding(horizontal = MaterialTheme.padding.medium, vertical = MaterialTheme.padding.small),
-        style = MaterialTheme.typography.header,
+        modifier = modifier.padding(start = 28.dp, end = 28.dp, top = 20.dp, bottom = 10.dp),
+        style = MaterialTheme.typography.titleMedium,
     )
 }
 

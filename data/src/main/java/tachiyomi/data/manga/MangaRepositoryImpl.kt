@@ -63,6 +63,12 @@ class MangaRepositoryImpl(
             .awaitAsList()
     }
 
+    override suspend fun getMangasWithFavoriteTimestamp(): List<Manga> {
+        return database.mangasQueries
+            .getMangasWithFavoriteTimestamp(MangaMapper::mapManga)
+            .awaitAsList()
+    }
+
     override suspend fun getLibraryManga(): List<LibraryManga> {
         return database.libraryViewQueries
             .library(MangaMapper::mapLibraryManga)

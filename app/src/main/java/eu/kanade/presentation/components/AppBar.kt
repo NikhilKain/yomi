@@ -1,10 +1,16 @@
 package eu.kanade.presentation.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -14,8 +20,12 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
@@ -28,7 +38,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTooltipState
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -37,6 +46,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -77,6 +87,7 @@ fun AppBar(
     actionModeActions: @Composable RowScope.() -> Unit = {},
 
     scrollBehavior: TopAppBarScrollBehavior? = null,
+    compact: Boolean = false,
 ) {
     val isActionMode by remember(actionModeCounter) {
         derivedStateOf { actionModeCounter > 0 }
@@ -104,6 +115,7 @@ fun AppBar(
         isActionMode = isActionMode,
         onCancelActionMode = onCancelActionMode,
         scrollBehavior = scrollBehavior,
+        compact = compact,
     )
 }
 
@@ -124,36 +136,85 @@ fun AppBar(
     onCancelActionMode: () -> Unit = {},
 
     scrollBehavior: TopAppBarScrollBehavior? = null,
+    compact: Boolean = false,
 ) {
+    val scheme = MaterialTheme.colorScheme
+    val container = backgroundColor ?: if (isActionMode) scheme.surfaceContainerHigh else scheme.surface
+    val colors = TopAppBarDefaults.topAppBarColors(
+        containerColor = container,
+        scrolledContainerColor = container,
+    )
+    val navigation: @Composable () -> Unit = {
+        if (isActionMode) {
+            FilledTonalIconButton(
+                onClick = onCancelActionMode,
+                shapes = IconButtonDefaults.shapes(),
+                modifier = Modifier.padding(start = 8.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Close,
+                    contentDescription = stringResource(MR.strings.action_cancel),
+                )
+            }
+        } else {
+            navigateUp?.let {
+                FilledTonalIconButton(
+                    onClick = it,
+                    shapes = IconButtonDefaults.shapes(),
+                    modifier = Modifier.padding(start = 8.dp),
+                ) {
+                    UpIcon(navigationIcon = navigationIcon)
+                }
+            }
+        }
+    }
+    val trailing: @Composable RowScope.() -> Unit = {
+        actions()
+        Spacer(Modifier.width(8.dp))
+    }
     Column(
         modifier = modifier,
     ) {
-        TopAppBar(
-            navigationIcon = {
-                if (isActionMode) {
-                    IconButton(onClick = onCancelActionMode) {
-                        Icon(
-                            imageVector = Icons.Outlined.Close,
-                            contentDescription = stringResource(MR.strings.action_cancel),
-                        )
+        when {
+            // Search, selection and dense screens: one quiet row.
+            compact || isActionMode -> TopAppBar(
+                navigationIcon = navigation,
+                title = titleContent,
+                actions = trailing,
+                colors = colors,
+            )
+            // Top-level destinations: the title is the header, with its actions beside it.
+            navigateUp == null -> TopAppBar(
+                title = {
+                    ProvideTextStyle(MaterialTheme.typography.displaySmall) {
+                        Box(Modifier.padding(start = 4.dp)) { titleContent() }
                     }
-                } else {
-                    navigateUp?.let {
-                        IconButton(onClick = it) {
-                            UpIcon(navigationIcon = navigationIcon)
-                        }
+                },
+                actions = trailing,
+                expandedHeight = 88.dp,
+                colors = colors,
+            )
+            // Everything deeper: a round back button over a large title that folds away on scroll.
+            else -> LargeTopAppBar(
+                navigationIcon = navigation,
+                title = {
+                    val expanded = LocalTextStyle.current.fontSize.value >= 26f
+                    ProvideTextStyle(
+                        if (expanded) {
+                            MaterialTheme.typography.displaySmall
+                        } else {
+                            MaterialTheme.typography.titleLarge
+                        },
+                    ) {
+                        Box(Modifier.padding(start = if (expanded) 4.dp else 0.dp)) { titleContent() }
                     }
-                }
-            },
-            title = titleContent,
-            actions = actions,
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = backgroundColor ?: MaterialTheme.colorScheme.surfaceColorAtElevation(
-                    elevation = if (isActionMode) 3.dp else 0.dp,
-                ),
-            ),
-            scrollBehavior = scrollBehavior,
-        )
+                },
+                actions = trailing,
+                expandedHeight = 148.dp,
+                colors = colors,
+                scrollBehavior = scrollBehavior,
+            )
+        }
     }
 }
 
@@ -167,7 +228,8 @@ fun AppBarTitle(
         title?.let {
             Text(
                 text = it,
-                maxLines = 1,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
         }
@@ -202,7 +264,7 @@ fun AppBarActions(
             state = rememberTooltipState(),
             focusable = false,
         ) {
-            IconButton(
+            AppBarIconButton(
                 onClick = it.onClick,
                 enabled = it.enabled,
             ) {
@@ -227,7 +289,7 @@ fun AppBarActions(
             state = rememberTooltipState(),
             focusable = false,
         ) {
-            IconButton(
+            AppBarIconButton(
                 onClick = { showMenu = !showMenu },
             ) {
                 Icon(
@@ -279,6 +341,7 @@ fun SearchToolbar(
 
     AppBar(
         modifier = modifier,
+        compact = searchQuery != null,
         titleContent = {
             if (searchQuery == null) return@AppBar titleContent()
 
@@ -298,6 +361,8 @@ fun SearchToolbar(
                 onValueChange = onChangeSearchQuery,
                 modifier = Modifier
                     .fillMaxWidth()
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                     .focusRequester(focusRequester)
                     .runOnEnterKeyPressed(action = searchAndClearFocus)
                     .showSoftKeyboard(remember { searchQuery.isEmpty() })
@@ -356,7 +421,7 @@ fun SearchToolbar(
                         state = rememberTooltipState(),
                         focusable = false,
                     ) {
-                        IconButton(
+                        AppBarIconButton(
                             onClick = onClick,
                         ) {
                             Icon(
@@ -376,7 +441,7 @@ fun SearchToolbar(
                         state = rememberTooltipState(),
                         focusable = false,
                     ) {
-                        IconButton(
+                        AppBarIconButton(
                             onClick = {
                                 onClick()
                                 focusRequester.requestFocus()
@@ -427,4 +492,25 @@ sealed interface AppBar {
         val title: String,
         val onClick: () -> Unit,
     ) : AppBarAction
+}
+
+/** Toolbar action in a quiet tonal circle, the way every Yomi header presents its actions. */
+@Composable
+fun AppBarIconButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    content: @Composable () -> Unit,
+) {
+    FilledTonalIconButton(
+        onClick = onClick,
+        enabled = enabled,
+        shapes = IconButtonDefaults.shapes(),
+        colors = IconButtonDefaults.filledTonalIconButtonColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ),
+        modifier = modifier.padding(horizontal = 2.dp),
+        content = content,
+    )
 }

@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.saver.Image
 import eu.kanade.tachiyomi.data.saver.ImageSaver
 import eu.kanade.tachiyomi.data.saver.Location
+import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.reader.loader.ChapterLoader
@@ -74,6 +75,7 @@ import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.domain.sync.service.SyncPreferences
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -275,6 +277,21 @@ class ReaderViewModel @JvmOverloads constructor(
      */
     fun onActivityFinish() {
         deletePendingChapters()
+        syncReadProgress()
+    }
+
+    /**
+     * Pushes this reading session out to the other devices. Deliberately hooked to leaving the
+     * reader rather than to each chapter completing, so a long session costs one sync instead of
+     * one per chapter.
+     */
+    private fun syncReadProgress() {
+        if (incognitoMode) return
+
+        val syncPreferences = Injekt.get<SyncPreferences>()
+        if (!syncPreferences.isSyncEnabled() || !syncPreferences.syncOnChapterRead().get()) return
+
+        SyncDataJob.startNow(Injekt.get<Application>())
     }
 
     /**

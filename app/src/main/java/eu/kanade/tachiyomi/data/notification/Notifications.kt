@@ -59,6 +59,14 @@ object Notifications {
     const val ID_RESTORE_COMPLETE = -504
 
     /**
+     * Cloud sync reuses the backup/restore channels, since it is the same data moving, but keeps
+     * its own ids so a sync notification never replaces a manual backup one.
+     */
+    const val ID_SYNC_PROGRESS = -505
+    const val ID_SYNC_COMPLETE = -506
+    const val ID_SYNC_EXTENSIONS = -507
+
+    /**
      * Notification channel used for Incognito Mode
      */
     const val CHANNEL_INCOGNITO_MODE = "incognito_mode_channel"

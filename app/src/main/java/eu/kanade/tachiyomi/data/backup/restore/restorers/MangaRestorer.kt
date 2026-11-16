@@ -30,6 +30,7 @@ import kotlin.math.max
 import kotlin.time.Clock
 
 class MangaRestorer(
+    private val isSync: Boolean = false,
     private val database: Database = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
     private val getMangaByUrlAndSourceId: GetMangaByUrlAndSourceId = Injekt.get(),
@@ -87,11 +88,24 @@ class MangaRestorer(
     }
 
     private suspend fun restoreExistingManga(manga: Manga, dbManga: Manga): Manga {
-        return if (manga.version > dbManga.version) {
+        val restored = if (manga.version > dbManga.version) {
             updateManga(dbManga.copyFrom(manga).copy(id = dbManga.id))
         } else {
             updateManga(manga.copyFrom(dbManga).copy(id = dbManga.id))
         }
+
+        if (!isSync) return restored
+
+        // copyFrom ORs the two favorite flags. That is correct for a restore, which must never
+        // silently empty someone's library, and wrong for a sync, where removing an entry on one
+        // device has to be able to win. SyncMerger already arbitrated this using
+        // favoriteModifiedAt, so take its answer verbatim instead of re-deriving it here.
+        database.mangasQueries.updateFavoriteState(
+            favorite = manga.favorite,
+            favoriteModifiedAt = manga.favoriteModifiedAt,
+            mangaId = dbManga.id,
+        )
+        return restored.copy(favorite = manga.favorite, favoriteModifiedAt = manga.favoriteModifiedAt)
     }
 
     private fun Manga.copyFrom(newer: Manga): Manga {

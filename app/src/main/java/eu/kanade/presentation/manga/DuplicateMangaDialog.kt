@@ -63,6 +63,7 @@ import eu.kanade.presentation.more.settings.LocalPreferenceMinHeight
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.SManga
+import tachiyomi.presentation.core.components.yomi.SoftGap
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaWithChapterCount
 import tachiyomi.domain.source.model.StubSource
@@ -136,7 +137,7 @@ fun DuplicateMangaDialog(
             }
 
             Column(modifier = horizontalPaddingModifier) {
-                HorizontalDivider()
+                SoftGap()
 
                 TextPreferenceWidget(
                     title = stringResource(MR.strings.action_add_anyway),

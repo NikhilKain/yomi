@@ -12,7 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.NewReleases
-import androidx.compose.material3.FilterChip
+import tachiyomi.presentation.core.components.yomi.ChoiceChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -154,7 +154,7 @@ data class BrowseSourceScreen(
                             .padding(horizontal = MaterialTheme.padding.small),
                         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                     ) {
-                        FilterChip(
+                        ChoiceChip(
                             selected = state.listing == Listing.Popular,
                             onClick = {
                                 viewModel.resetFilters()
@@ -173,7 +173,7 @@ data class BrowseSourceScreen(
                             },
                         )
                         if (viewModel.source.supportsLatest) {
-                            FilterChip(
+                            ChoiceChip(
                                 selected = state.listing == Listing.Latest,
                                 onClick = {
                                     viewModel.resetFilters()
@@ -193,7 +193,7 @@ data class BrowseSourceScreen(
                             )
                         }
                         if (state.filters.isNotEmpty()) {
-                            FilterChip(
+                            ChoiceChip(
                                 selected = state.listing is Listing.Search,
                                 onClick = viewModel::openFilterSheet,
                                 leadingIcon = {

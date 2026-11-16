@@ -1,7 +1,7 @@
 package eu.kanade.presentation.reader.settings
 
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.material3.FilterChip
+import tachiyomi.presentation.core.components.yomi.ChoiceChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,6 +14,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderSettingsViewModel
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
+import eu.kanade.tachiyomi.ui.reader.viewer.pager.FlipScroller
 import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.CheckboxItem
@@ -32,7 +33,7 @@ internal fun ColumnScope.ReadingModePage(viewModel: ReaderSettingsViewModel) {
     val readingMode = remember(manga) { ReadingMode.fromPreference(manga?.readingMode?.toInt()) }
     SettingsChipRow(MR.strings.pref_category_reading_mode) {
         ReadingMode.entries.map {
-            FilterChip(
+            ChoiceChip(
                 selected = it == readingMode,
                 onClick = { viewModel.onChangeReadingMode(it) },
                 label = { Text(stringResource(it.stringRes)) },
@@ -43,7 +44,7 @@ internal fun ColumnScope.ReadingModePage(viewModel: ReaderSettingsViewModel) {
     val orientation = remember(manga) { ReaderOrientation.fromPreference(manga?.readerOrientation?.toInt()) }
     SettingsChipRow(MR.strings.rotation_type) {
         ReaderOrientation.entries.map {
-            FilterChip(
+            ChoiceChip(
                 selected = it == orientation,
                 onClick = { viewModel.onChangeOrientation(it) },
                 label = { Text(stringResource(it.stringRes)) },
@@ -75,7 +76,7 @@ private fun ColumnScope.PagerViewerSettings(viewModel: ReaderSettingsViewModel) 
     val imageScaleType by viewModel.preferences.imageScaleType.collectAsState()
     SettingsChipRow(MR.strings.pref_image_scale_type) {
         ReaderPreferences.ImageScaleType.mapIndexed { index, it ->
-            FilterChip(
+            ChoiceChip(
                 selected = imageScaleType == index + 1,
                 onClick = { viewModel.preferences.imageScaleType.set(index + 1) },
                 label = { Text(stringResource(it)) },
@@ -86,7 +87,7 @@ private fun ColumnScope.PagerViewerSettings(viewModel: ReaderSettingsViewModel) 
     val zoomStart by viewModel.preferences.zoomStart.collectAsState()
     SettingsChipRow(MR.strings.pref_zoom_start) {
         ReaderPreferences.ZoomStart.mapIndexed { index, it ->
-            FilterChip(
+            ChoiceChip(
                 selected = zoomStart == index + 1,
                 onClick = { viewModel.preferences.zoomStart.set(index + 1) },
                 label = { Text(stringResource(it)) },
@@ -108,6 +109,37 @@ private fun ColumnScope.PagerViewerSettings(viewModel: ReaderSettingsViewModel) 
         label = stringResource(MR.strings.pref_navigate_pan),
         pref = viewModel.preferences.navigateToPan,
     )
+
+    val bookMode by viewModel.preferences.bookModeLandscape.collectAsState()
+    CheckboxItem(
+        label = stringResource(MR.strings.pref_book_mode),
+        pref = viewModel.preferences.bookModeLandscape,
+    )
+
+    if (bookMode) {
+        CheckboxItem(
+            label = stringResource(MR.strings.pref_book_mode_cover_alone),
+            pref = viewModel.preferences.bookModeCoverAlone,
+        )
+    }
+
+    val pageFlip by viewModel.preferences.pageFlipAnimation.collectAsState()
+    CheckboxItem(
+        label = stringResource(MR.strings.pref_page_flip_animation),
+        pref = viewModel.preferences.pageFlipAnimation,
+    )
+
+    if (pageFlip) {
+        val flipSpeed by viewModel.preferences.pageFlipSpeed.collectAsState()
+        SliderItem(
+            label = stringResource(MR.strings.pref_page_flip_speed),
+            value = flipSpeed,
+            valueRange = FlipScroller.MIN_SPEED..FlipScroller.MAX_SPEED,
+            steps = 10,
+            valueString = "$flipSpeed%",
+            onChange = { viewModel.preferences.pageFlipSpeed.set(it) },
+        )
+    }
 
     val dualPageSplitPaged by viewModel.preferences.dualPageSplitPaged.collectAsState()
     CheckboxItem(
@@ -213,7 +245,7 @@ private fun ColumnScope.TapZonesItems(
 ) {
     SettingsChipRow(MR.strings.pref_viewer_nav) {
         ReaderPreferences.TapZones.mapIndexed { index, it ->
-            FilterChip(
+            ChoiceChip(
                 selected = selected == index,
                 onClick = { onSelect(index) },
                 label = { Text(stringResource(it)) },
@@ -224,7 +256,7 @@ private fun ColumnScope.TapZonesItems(
     if (selected != 5) {
         SettingsChipRow(MR.strings.pref_read_with_tapping_inverted) {
             ReaderPreferences.TappingInvertMode.entries.map {
-                FilterChip(
+                ChoiceChip(
                     selected = it == invertMode,
                     onClick = { onSelectInvertMode(it) },
                     label = { Text(stringResource(it.titleRes)) },

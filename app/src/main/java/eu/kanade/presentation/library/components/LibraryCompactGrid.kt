@@ -2,6 +2,7 @@ package eu.kanade.presentation.library.components
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -12,6 +13,7 @@ import tachiyomi.domain.manga.model.MangaCover
 @Composable
 internal fun LibraryCompactGrid(
     items: List<LibraryItem>,
+    spotlight: (@Composable () -> Unit)? = null,
     showTitle: Boolean,
     columns: Int,
     contentPadding: PaddingValues,
@@ -27,6 +29,9 @@ internal fun LibraryCompactGrid(
         columns = columns,
         contentPadding = contentPadding,
     ) {
+        if (spotlight != null) {
+            item(key = "yomi-spotlight", span = { GridItemSpan(maxLineSpan) }) { spotlight() }
+        }
         globalSearchItem(searchQuery, onGlobalSearchClicked)
 
         items(

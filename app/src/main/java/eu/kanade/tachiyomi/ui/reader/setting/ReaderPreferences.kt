@@ -134,6 +134,40 @@ class ReaderPreferences(
 
     // endregion
 
+    // region Book mode
+
+    /**
+     * Lays two consecutive pages side by side in landscape, the way a physical comic opens.
+     *
+     * Distinct from [dualPageSplitPaged], which is the opposite operation: that one takes a single
+     * wide scan holding two drawn pages and cuts it in half.
+     */
+    val bookModeLandscape: Preference<Boolean> = preferenceStore.getBoolean("pref_book_mode_landscape", false)
+
+    /**
+     * Shows the first page alone so the remaining pairs line up the way they were drawn.
+     *
+     * Printed comics put page 1 on a right-hand leaf, which makes every later spread an even/odd
+     * pair. Pairing blindly from page 1 offsets every spread by one and splits artwork that was
+     * meant to face itself.
+     */
+    val bookModeCoverAlone: Preference<Boolean> = preferenceStore.getBoolean("pref_book_mode_cover_alone", true)
+
+    /**
+     * Turns pages with a hinged page-turn animation instead of sliding them sideways.
+     */
+    val pageFlipAnimation: Preference<Boolean> = preferenceStore.getBoolean("pref_page_flip_animation", false)
+
+    /**
+     * How fast a page settles once released, as a percentage of the pager's own timing.
+     *
+     * A percentage rather than a duration because the pager already varies the time by how far and
+     * how fast the page was dragged, and a flick should still land sooner than a slow drag.
+     */
+    val pageFlipSpeed: Preference<Int> = preferenceStore.getInt("pref_page_flip_speed", 100)
+
+    // endregion
+
     // region Color filter
 
     val customBrightness: Preference<Boolean> = preferenceStore.getBoolean("pref_custom_brightness_key", false)

@@ -25,6 +25,7 @@ import eu.kanade.presentation.components.TabbedDialog
 import eu.kanade.presentation.components.TabbedDialogPaddings
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
+import tachiyomi.presentation.core.components.yomi.SoftGap
 import tachiyomi.core.common.preference.TriState
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.SettingsItemsPaddings
@@ -77,7 +78,7 @@ private fun ColumnScope.CategoryFilterSheet(
             ),
     )
 
-    HorizontalDivider(modifier = Modifier.padding(MaterialTheme.padding.extraSmall))
+    SoftGap(height = 8.dp)
 
     val allCategories by viewModel.getCategories.subscribe().collectAsState(initial = emptyList())
 

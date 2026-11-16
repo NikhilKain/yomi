@@ -85,9 +85,12 @@ fun MangaBottomActionMenu(
     ) {
         val scope = rememberCoroutineScope()
         Surface(
-            modifier = modifier,
-            shape = MaterialTheme.shapes.large.copy(bottomEnd = ZeroCornerSize, bottomStart = ZeroCornerSize),
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            modifier = modifier
+                .padding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom).asPaddingValues())
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surfaceContainerHighest,
+            shadowElevation = 6.dp,
         ) {
             val haptic = LocalHapticFeedback.current
             val confirm = remember { mutableStateListOf(false, false, false, false, false, false, false) }
@@ -102,13 +105,7 @@ fun MangaBottomActionMenu(
                 }
             }
             Row(
-                modifier = Modifier
-                    .padding(
-                        WindowInsets.navigationBars
-                            .only(WindowInsetsSides.Bottom)
-                            .asPaddingValues(),
-                    )
-                    .padding(horizontal = 8.dp, vertical = 12.dp),
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
             ) {
                 if (onBookmarkClicked != null) {
                     Button(
@@ -246,9 +243,12 @@ fun LibraryBottomActionMenu(
     ) {
         val scope = rememberCoroutineScope()
         Surface(
-            modifier = modifier,
-            shape = MaterialTheme.shapes.large.copy(bottomEnd = ZeroCornerSize, bottomStart = ZeroCornerSize),
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            modifier = modifier
+                .padding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom).asPaddingValues())
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surfaceContainerHighest,
+            shadowElevation = 6.dp,
         ) {
             val haptic = LocalHapticFeedback.current
             val confirm = remember { mutableStateListOf(false, false, false, false, false, false) }
@@ -264,12 +264,7 @@ fun LibraryBottomActionMenu(
             }
             val itemOverflow = onDownloadClicked != null
             Row(
-                modifier = Modifier
-                    .windowInsetsPadding(
-                        WindowInsets.navigationBars
-                            .only(WindowInsetsSides.Bottom),
-                    )
-                    .padding(horizontal = 8.dp, vertical = 12.dp),
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
             ) {
                 Button(
                     title = stringResource(MR.strings.action_move_category),

@@ -14,6 +14,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.foundation.background
+import androidx.compose.ui.draw.clip
+import tachiyomi.presentation.core.components.yomi.LocalGroupPosition
+import tachiyomi.presentation.core.components.yomi.shape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -23,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import eu.kanade.presentation.components.yomiPanel
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.presentation.util.formatChapterNumber
@@ -45,6 +50,9 @@ fun HistoryItem(
 ) {
     Row(
         modifier = modifier
+            .padding(horizontal = 16.dp, vertical = 1.5.dp)
+            .clip(LocalGroupPosition.current.shape())
+            .background(MaterialTheme.colorScheme.surfaceContainer)
             .clickable(onClick = onClickResume)
             .height(HistoryItemHeight)
             .padding(horizontal = MaterialTheme.padding.medium, vertical = MaterialTheme.padding.small),
@@ -52,6 +60,7 @@ fun HistoryItem(
     ) {
         MangaCover.Book(
             modifier = Modifier.fillMaxHeight(),
+            shape = MaterialTheme.shapes.small,
             data = history.coverData,
             onClick = onClickCover,
         )
@@ -63,10 +72,9 @@ fun HistoryItem(
             val textStyle = MaterialTheme.typography.bodyMedium
             Text(
                 text = history.title,
-                fontWeight = FontWeight.SemiBold,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                style = textStyle,
+                style = MaterialTheme.typography.titleMedium,
             )
             val readAt = remember { history.readAt?.toTimestampString() ?: "" }
             Text(
@@ -79,7 +87,8 @@ fun HistoryItem(
                 } else {
                     readAt
                 },
-                modifier = Modifier.padding(top = 4.dp),
+                modifier = Modifier.padding(top = 2.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = textStyle,
             )
         }

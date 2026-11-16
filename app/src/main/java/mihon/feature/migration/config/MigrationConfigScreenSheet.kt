@@ -13,7 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Warning
-import androidx.compose.material3.FilterChip
+import tachiyomi.presentation.core.components.yomi.ChoiceChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -83,7 +83,7 @@ fun MigrationConfigScreenSheet(
                         .fastFilterNot { it == MigrationFlag.REMOVE_DOWNLOAD }
                         .fastForEach { flag ->
                             val selected = flag in migrationFlags
-                            FilterChip(
+                            ChoiceChip(
                                 selected = selected,
                                 onClick = {
                                     preferences.migrationFlags.getAndSet { currentFlags ->

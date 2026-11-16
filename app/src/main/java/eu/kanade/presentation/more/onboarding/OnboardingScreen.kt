@@ -7,8 +7,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.RocketLaunch
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.LinearWavyProgressIndicator
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -47,7 +52,7 @@ fun OnboardingScreen(
     }
 
     InfoScreen(
-        icon = Icons.Outlined.RocketLaunch,
+        icon = Icons.AutoMirrored.Rounded.MenuBook,
         headingText = stringResource(MR.strings.onboarding_heading),
         subtitleText = stringResource(MR.strings.onboarding_description),
         acceptText = stringResource(
@@ -66,12 +71,18 @@ fun OnboardingScreen(
             }
         },
     ) {
+        val progress by animateFloatAsState((currentStep + 1f) / steps.size, label = "onboarding-progress")
+        LinearWavyProgressIndicator(
+            progress = { progress },
+            waveSpeed = 0.dp,
+            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+        )
         Box(
             modifier = Modifier
                 .padding(vertical = MaterialTheme.padding.small)
-                .clip(MaterialTheme.shapes.small)
+                .clip(MaterialTheme.shapes.extraLarge)
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surfaceVariant),
+                .background(MaterialTheme.colorScheme.surfaceContainerLow),
         ) {
             AnimatedContent(
                 targetState = currentStep,

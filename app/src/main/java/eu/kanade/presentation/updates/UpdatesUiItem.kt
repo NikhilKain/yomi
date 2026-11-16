@@ -19,6 +19,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.foundation.background
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.runtime.CompositionLocalProvider
+import tachiyomi.presentation.core.components.yomi.LocalGroupPosition
+import tachiyomi.presentation.core.components.yomi.groupPositionOf
+import tachiyomi.presentation.core.components.yomi.shape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -33,6 +40,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.relativeDateText
+import eu.kanade.presentation.components.yomiPanel
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.manga.components.ChapterDownloadIndicator
 import eu.kanade.presentation.manga.components.DotSeparatorText
@@ -55,11 +63,12 @@ internal fun LazyListScope.updatesLastUpdatedItem(
         Box(
             modifier = Modifier
                 .animateItem(fadeInSpec = null, fadeOutSpec = null)
-                .padding(horizontal = MaterialTheme.padding.medium, vertical = MaterialTheme.padding.small),
+                .padding(start = 28.dp, end = 28.dp, top = 4.dp, bottom = 4.dp),
         ) {
             Text(
                 text = stringResource(MR.strings.updates_last_update_info, relativeTimeSpanString(lastUpdated)),
-                fontStyle = FontStyle.Italic,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -73,21 +82,23 @@ internal fun LazyListScope.updatesUiItems(
     onClickUpdate: (UpdatesItem) -> Unit,
     onDownloadChapter: (List<UpdatesItem>, ChapterDownloadAction) -> Unit,
 ) {
-    items(
+    itemsIndexed(
         items = uiModels,
-        contentType = {
+        contentType = { _, it ->
             when (it) {
                 is UpdatesUiModel.Header -> "header"
                 is UpdatesUiModel.Item -> "item"
             }
         },
-        key = {
+        key = { _, it ->
             when (it) {
                 is UpdatesUiModel.Header -> "updatesHeader-${it.hashCode()}"
                 is UpdatesUiModel.Item -> "updates-${it.item.update.mangaId}-${it.item.update.chapterId}"
             }
         },
-    ) { item ->
+    ) { index, item ->
+        val position = groupPositionOf(uiModels, index) { it is UpdatesUiModel.Item }
+        CompositionLocalProvider(LocalGroupPosition provides position) {
         when (item) {
             is UpdatesUiModel.Header -> {
                 ListGroupHeader(
@@ -127,6 +138,7 @@ internal fun LazyListScope.updatesUiItems(
                 )
             }
         }
+        }
     }
 }
 
@@ -149,6 +161,9 @@ private fun UpdatesUiItem(
 
     Row(
         modifier = modifier
+            .padding(horizontal = 16.dp, vertical = 1.5.dp)
+            .clip(LocalGroupPosition.current.shape())
+            .background(MaterialTheme.colorScheme.surfaceContainer)
             .selectedBackground(selected)
             .combinedClickable(
                 onClick = onClick,
@@ -157,14 +172,15 @@ private fun UpdatesUiItem(
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 },
             )
-            .height(56.dp)
+            .height(76.dp)
             .padding(horizontal = MaterialTheme.padding.medium),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        MangaCover.Square(
+        MangaCover.Book(
             modifier = Modifier
-                .padding(vertical = 6.dp)
+                .padding(vertical = 8.dp)
                 .fillMaxHeight(),
+            shape = MaterialTheme.shapes.small,
             data = update.coverData,
             onClick = onClickCover,
         )
@@ -177,7 +193,7 @@ private fun UpdatesUiItem(
             Text(
                 text = update.mangaTitle,
                 maxLines = 1,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.titleMedium,
                 color = LocalContentColor.current.copy(alpha = textAlpha),
                 overflow = TextOverflow.Ellipsis,
             )
@@ -207,7 +223,7 @@ private fun UpdatesUiItem(
                 Text(
                     text = update.chapterName,
                     maxLines = 1,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = LocalContentColor.current.copy(alpha = textAlpha),
                     overflow = TextOverflow.Ellipsis,
                     onTextLayout = { textHeight = it.size.height },

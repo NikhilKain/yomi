@@ -28,14 +28,13 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.VerticalDivider
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -210,7 +209,6 @@ private fun TrackInfoItem(
                     color = MaterialTheme.colorScheme.onSurface,
                 )
             }
-            VerticalDivider()
             TrackInfoItemMenu(
                 onOpenInBrowser = onOpenInBrowser,
                 onRemoved = onRemoved,
@@ -220,29 +218,23 @@ private fun TrackInfoItem(
             )
         }
 
-        Box(
-            modifier = Modifier
-                .padding(top = 12.dp)
-                .clip(MaterialTheme.shapes.medium)
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                .padding(8.dp)
-                .clip(RoundedCornerShape(6.dp)),
-        ) {
-            Column {
-                Row(modifier = Modifier.height(IntrinsicSize.Min)) {
+        Box(modifier = Modifier.padding(top = 12.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(
+                    modifier = Modifier.height(IntrinsicSize.Min),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
                     TrackDetailsItem(
                         modifier = Modifier.weight(1f),
                         text = status?.let { stringResource(it) } ?: "",
                         onClick = onStatusClick,
                     )
-                    VerticalDivider()
                     TrackDetailsItem(
                         modifier = Modifier.weight(1f),
                         text = chapters,
                         onClick = onChaptersClick,
                     )
                     if (onScoreClick != null) {
-                        VerticalDivider()
                         TrackDetailsItem(
                             modifier = Modifier.weight(1f),
                             text = score,
@@ -253,15 +245,16 @@ private fun TrackInfoItem(
                 }
 
                 if (onStartDateClick != null && onEndDateClick != null) {
-                    HorizontalDivider()
-                    Row(modifier = Modifier.height(IntrinsicSize.Min)) {
+                    Row(
+                        modifier = Modifier.height(IntrinsicSize.Min),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
                         TrackDetailsItem(
                             modifier = Modifier.weight(1F),
                             text = startDate,
                             placeholder = stringResource(MR.strings.track_started_reading_date),
                             onClick = onStartDateClick,
                         )
-                        VerticalDivider()
                         TrackDetailsItem(
                             modifier = Modifier.weight(1F),
                             text = endDate,
@@ -286,8 +279,11 @@ private fun TrackDetailsItem(
 ) {
     Box(
         modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
             .clickable(onClick = onClick)
             .fillMaxHeight()
+            .heightIn(min = 56.dp)
             .padding(12.dp),
         contentAlignment = Alignment.Center,
     ) {
@@ -311,8 +307,9 @@ private fun TrackInfoItemEmpty(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         TrackLogoIcon(tracker)
-        TextButton(
+        androidx.compose.material3.FilledTonalButton(
             onClick = onNewSearch,
+            shapes = androidx.compose.material3.ButtonDefaults.shapes(),
             modifier = Modifier
                 .padding(start = 16.dp)
                 .weight(1f),

@@ -1,13 +1,21 @@
 package eu.kanade.presentation.more.settings.widget
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.MultiChoiceSegmentedButtonRow
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.ToggleButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import eu.kanade.domain.ui.model.ThemeMode
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
@@ -25,19 +33,22 @@ internal fun AppThemeModePreferenceWidget(
 ) {
     BasePreferenceWidget(
         subcomponent = {
-            MultiChoiceSegmentedButtonRow(
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = PrefsHorizontalPadding),
             ) {
                 options.onEachIndexed { index, (mode, labelRes) ->
-                    SegmentedButton(
+                    ToggleButton(
+                        modifier = Modifier.weight(1f).semantics { role = Role.RadioButton },
                         checked = mode == value,
                         onCheckedChange = { onItemClick(mode) },
-                        shape = SegmentedButtonDefaults.itemShape(
-                            index,
-                            options.size,
-                        ),
+                        shapes = when (index) {
+                            0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                            options.size - 1 -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                            else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                        },
                     ) {
                         Text(stringResource(labelRes))
                     }

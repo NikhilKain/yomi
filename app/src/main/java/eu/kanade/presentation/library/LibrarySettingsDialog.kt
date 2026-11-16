@@ -8,7 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.FilterChip
+import tachiyomi.presentation.core.components.yomi.ChoiceChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -231,7 +231,7 @@ private fun ColumnScope.DisplayPage(
     val displayMode by viewModel.libraryPreferences.displayMode.collectAsState()
     SettingsChipRow(MR.strings.action_display_mode) {
         displayModes.map { (titleRes, mode) ->
-            FilterChip(
+            ChoiceChip(
                 selected = displayMode == mode,
                 onClick = { viewModel.setDisplayMode(mode) },
                 label = { Text(stringResource(titleRes)) },

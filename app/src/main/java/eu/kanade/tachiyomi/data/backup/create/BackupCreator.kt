@@ -77,17 +77,7 @@ class BackupCreator(
                 throw IllegalStateException(context.stringResource(MR.strings.create_backup_file_error))
             }
 
-            val nonFavoriteManga = if (options.readEntries) mangaRepository.getReadMangaNotInLibrary() else emptyList()
-            val backupManga = backupMangas(getFavorites.await() + nonFavoriteManga, options)
-
-            val backup = Backup(
-                backupManga = backupManga,
-                backupCategories = backupCategories(options),
-                backupSources = backupSources(backupManga),
-                backupPreferences = backupAppPreferences(options),
-                backupExtensionStores = backupExtensionStores(options),
-                backupSourcePreferences = backupSourcePreferences(options),
-            )
+            val backup = createBackup(options)
 
             val byteArray = parser.encodeToByteArray(Backup.serializer(), backup)
             if (byteArray.isEmpty()) {
@@ -117,6 +107,30 @@ class BackupCreator(
             file?.delete()
             throw e
         }
+    }
+
+    /**
+     * Builds the backup in memory without writing it anywhere. Used by cloud sync, which needs the
+     * object graph to merge against a remote snapshot rather than a file on disk.
+     */
+    suspend fun createBackup(options: BackupOptions): Backup {
+        val nonFavoriteManga = if (options.readEntries) mangaRepository.getReadMangaNotInLibrary() else emptyList()
+        val tombstones = if (options.unfavoriteTombstones) {
+            mangaRepository.getMangasWithFavoriteTimestamp()
+        } else {
+            emptyList()
+        }
+        val allManga = (getFavorites.await() + nonFavoriteManga + tombstones).distinctBy { it.id }
+        val backupManga = backupMangas(allManga, options)
+
+        return Backup(
+            backupManga = backupManga,
+            backupCategories = backupCategories(options),
+            backupSources = backupSources(backupManga),
+            backupPreferences = backupAppPreferences(options),
+            backupExtensionStores = backupExtensionStores(options),
+            backupSourcePreferences = backupSourcePreferences(options),
+        )
     }
 
     private suspend fun backupCategories(options: BackupOptions): List<BackupCategory> {

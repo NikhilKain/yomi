@@ -40,6 +40,7 @@ import tachiyomi.source.local.image.LocalCoverManager
 import tachiyomi.source.local.io.Archive
 import tachiyomi.source.local.io.Format
 import tachiyomi.source.local.io.LocalSourceFileSystem
+import tachiyomi.source.local.io.PdfCover
 import tachiyomi.source.local.metadata.fillMetadata
 import uy.kohesive.injekt.injectLazy
 import java.io.InputStream
@@ -85,8 +86,10 @@ class LocalSource(
         }
 
         var mangaDirs = fileSystem.getFilesInBaseDirectory()
-            // Filter out files that are hidden and is not a folder
-            .filter { it.isDirectory && !it.name.orEmpty().startsWith('.') }
+            // A folder is an entry with chapters inside it. A single readable file dropped straight
+            // into the root is an entry too, holding one chapter — which is what someone copying in
+            // one PDF expects, rather than having to invent a folder to put it in.
+            .filter { (it.isDirectory || isChapterFile(it)) && !it.name.orEmpty().startsWith('.') }
             .distinctBy { it.name }
             .filter {
                 if (lastModifiedLimit == 0L && query.isBlank()) {
@@ -124,7 +127,13 @@ class LocalSource(
             .map { mangaDir ->
                 async {
                     SManga.create().apply {
-                        title = mangaDir.name.orEmpty()
+                        // The url has to stay the name on disk so the file can be found again, but
+                        // "Dracula.pdf" is not a title anyone wants in their library.
+                        title = if (mangaDir.isDirectory) {
+                            mangaDir.name.orEmpty()
+                        } else {
+                            mangaDir.nameWithoutExtension.orEmpty()
+                        }
                         url = mangaDir.name.orEmpty()
 
                         // Try to find the cover
@@ -154,6 +163,13 @@ class LocalSource(
     private suspend fun getMangaDetails(manga: SManga): SManga = withIOContext {
         coverManager.find(manga.url)?.let {
             manga.thumbnail_url = it.uri.toString()
+        }
+
+        // A single-file entry has nowhere to keep a ComicInfo.xml, so there is no metadata to read
+        // and nothing has gone wrong. Reporting it as an invalid directory would bury a real error
+        // among one log line per loose file per refresh.
+        if (fileSystem.getBaseDirectory()?.findFile(manga.url)?.isDirectory == false) {
+            return@withIOContext manga
         }
 
         // Augment manga details based on metadata files
@@ -219,10 +235,13 @@ class LocalSource(
     }
 
     private fun <T> getComicInfoForChapter(chapter: UniFile, block: (InputStream) -> T): T? {
-        return if (chapter.isDirectory) {
-            chapter.findFile(COMIC_INFO_FILE)?.openInputStream()?.use(block)
-        } else {
-            chapter.archiveReader(context).use { reader ->
+        return when {
+            chapter.isDirectory -> chapter.findFile(COMIC_INFO_FILE)?.openInputStream()?.use(block)
+            // ComicInfo.xml is an entry inside an archive, and a PDF is not one. Handing it to the
+            // archive reader throws "Unrecognized archive format", which took out the whole chapter
+            // list rather than just the metadata lookup it was meant to be.
+            !Archive.isSupported(chapter) -> null
+            else -> chapter.archiveReader(context).use { reader ->
                 reader.getInputStream(COMIC_INFO_FILE)?.use(block)
             }
         }
@@ -266,13 +285,18 @@ class LocalSource(
 
     // Chapters
     private suspend fun getChapterList(manga: SManga): List<SChapter> = withIOContext {
-        val chapters = fileSystem.getFilesInMangaDirectory(manga.url)
+        // An entry that is itself a file is its own single chapter; there is no directory to list.
+        val looseFile = fileSystem.getBaseDirectory()
+            ?.findFile(manga.url)
+            ?.takeIf { !it.isDirectory }
+
+        val chapters = (looseFile?.let(::listOf) ?: fileSystem.getFilesInMangaDirectory(manga.url))
             // Only keep supported formats
             .filterNot { it.name.orEmpty().startsWith('.') }
-            .filter { it.isDirectory || Archive.isSupported(it) || it.extension.equals("epub", true) }
+            .filter { it.isDirectory || isChapterFile(it) }
             .map { chapterFile ->
                 SChapter.create().apply {
-                    url = "${manga.url}/${chapterFile.name}"
+                    url = if (looseFile != null) manga.url else "${manga.url}/${chapterFile.name}"
                     name = if (chapterFile.isDirectory) {
                         chapterFile.name
                     } else {
@@ -315,12 +339,24 @@ class LocalSource(
     // Unused stuff
     override suspend fun getPageList(chapter: SChapter): List<Page> = throw UnsupportedOperationException("Unused")
 
+    /** Whether this file is something the reader can open as one chapter. */
+    private fun isChapterFile(file: UniFile): Boolean =
+        Archive.isSupported(file) ||
+            file.extension.equals("epub", true) ||
+            file.extension.equals("pdf", true)
+
     fun getFormat(chapter: SChapter): Format {
         try {
-            val (mangaDirName, chapterName) = chapter.url.split('/', limit = 2)
-            return fileSystem.getBaseDirectory()
-                ?.findFile(mangaDirName)
-                ?.findFile(chapterName)
+            val base = fileSystem.getBaseDirectory()
+            // A chapter inside an entry folder is "<folder>/<file>"; an entry that is itself a
+            // single file has no second half, and points straight at the root.
+            val parts = chapter.url.split('/', limit = 2)
+            val file = if (parts.size == 2) {
+                base?.findFile(parts[0])?.findFile(parts[1])
+            } else {
+                base?.findFile(parts[0])
+            }
+            return file
                 ?.let(Format.Companion::valueOf)
                 ?: throw Exception(context.stringResource(MR.strings.chapter_not_found))
         } catch (e: Format.UnknownFormatException) {
@@ -363,6 +399,12 @@ class LocalSource(
 
                         entry?.let { coverManager.update(manga, epub.getInputStream(it)!!) }
                     }
+                }
+                is Format.Pdf -> {
+                    // A PDF holds no extractable cover image, so the first page has to be drawn to
+                    // get one at all.
+                    PdfCover.renderFirstPage(context, format.file)
+                        ?.let { coverManager.update(manga, it) }
                 }
             }
         } catch (e: Throwable) {

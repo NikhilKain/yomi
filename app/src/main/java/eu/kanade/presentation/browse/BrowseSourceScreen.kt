@@ -28,6 +28,7 @@ import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.material.PullRefresh
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
@@ -116,32 +117,38 @@ fun BrowseSourceContent(
         return
     }
 
-    when (displayMode) {
-        LibraryDisplayMode.ComfortableGrid -> {
-            BrowseSourceComfortableGrid(
-                mangaList = mangaList,
-                columns = columns,
-                contentPadding = contentPadding,
-                onMangaClick = onMangaClick,
-                onMangaLongClick = onMangaLongClick,
-            )
-        }
-        LibraryDisplayMode.List -> {
-            BrowseSourceList(
-                mangaList = mangaList,
-                contentPadding = contentPadding,
-                onMangaClick = onMangaClick,
-                onMangaLongClick = onMangaLongClick,
-            )
-        }
-        LibraryDisplayMode.CompactGrid, LibraryDisplayMode.CoverOnlyGrid -> {
-            BrowseSourceCompactGrid(
-                mangaList = mangaList,
-                columns = columns,
-                contentPadding = contentPadding,
-                onMangaClick = onMangaClick,
-                onMangaLongClick = onMangaLongClick,
-            )
+    PullRefresh(
+        enabled = true,
+        refreshing = mangaList.loadState.refresh is LoadState.Loading,
+        onRefresh = mangaList::refresh,
+    ) {
+        when (displayMode) {
+            LibraryDisplayMode.ComfortableGrid -> {
+                BrowseSourceComfortableGrid(
+                    mangaList = mangaList,
+                    columns = columns,
+                    contentPadding = contentPadding,
+                    onMangaClick = onMangaClick,
+                    onMangaLongClick = onMangaLongClick,
+                )
+            }
+            LibraryDisplayMode.List -> {
+                BrowseSourceList(
+                    mangaList = mangaList,
+                    contentPadding = contentPadding,
+                    onMangaClick = onMangaClick,
+                    onMangaLongClick = onMangaLongClick,
+                )
+            }
+            LibraryDisplayMode.CompactGrid, LibraryDisplayMode.CoverOnlyGrid -> {
+                BrowseSourceCompactGrid(
+                    mangaList = mangaList,
+                    columns = columns,
+                    contentPadding = contentPadding,
+                    onMangaClick = onMangaClick,
+                    onMangaLongClick = onMangaLongClick,
+                )
+            }
         }
     }
 }

@@ -30,6 +30,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.animateFloatingActionButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -54,6 +55,10 @@ import eu.kanade.presentation.manga.components.MangaActionRow
 import eu.kanade.presentation.manga.components.MangaBottomActionMenu
 import eu.kanade.presentation.manga.components.MangaChapterListItem
 import eu.kanade.presentation.manga.components.MangaInfoBox
+import eu.kanade.presentation.manga.components.MangaProgressCard
+import eu.kanade.presentation.theme.AmbientTheme
+import tachiyomi.domain.manga.model.asMangaCover
+import androidx.compose.foundation.lazy.itemsIndexed
 import eu.kanade.presentation.manga.components.MangaToolbar
 import eu.kanade.presentation.manga.components.MissingChapterCountListItem
 import eu.kanade.presentation.util.formatChapterNumber
@@ -68,6 +73,8 @@ import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.yomi.GroupPosition
+import tachiyomi.presentation.core.components.yomi.LocalGroupPosition
 import tachiyomi.presentation.core.components.TwoPanelBox
 import tachiyomi.presentation.core.components.VerticalFastScroller
 import tachiyomi.presentation.core.components.material.PullRefresh
@@ -133,6 +140,7 @@ fun MangaScreen(
         }
     }
 
+    AmbientTheme(state.manga.asMangaCover()) {
     if (!isTabletUi) {
         MangaScreenSmallImpl(
             state = state,
@@ -205,6 +213,7 @@ fun MangaScreen(
             onAllChapterSelected = onAllChapterSelected,
             onInvertSelection = onInvertSelection,
         )
+    }
     }
 }
 
@@ -325,9 +334,12 @@ private fun MangaScreenSmallImpl(
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         floatingActionButton = {
+            val pastProgressCard by remember {
+                derivedStateOf { chapterListState.firstVisibleItemIndex >= 3 }
+            }
             val isFABVisible = remember(chapters) {
                 chapters.fastAny { !it.chapter.read } && !isAnySelected
-            }
+            } && pastProgressCard
             SmallExtendedFloatingActionButton(
                 text = {
                     val isReading = remember(state.chapters) {
@@ -400,6 +412,18 @@ private fun MangaScreenSmallImpl(
                             onTrackingClicked = onTrackingClicked,
                             onEditIntervalClicked = onEditIntervalClicked,
                             onEditCategory = onEditCategoryClicked,
+                        )
+                    }
+
+                    item(
+                        key = MangaScreenItem.PROGRESS,
+                        contentType = MangaScreenItem.PROGRESS,
+                    ) {
+                        val readCount = remember(state.chapters) { state.chapters.count { it.chapter.read } }
+                        MangaProgressCard(
+                            read = readCount,
+                            total = state.chapters.size,
+                            onContinueReading = onContinueReading,
                         )
                     }
 
@@ -631,6 +655,11 @@ fun MangaScreenLargeImpl(
                             onEditIntervalClicked = onEditIntervalClicked,
                             onEditCategory = onEditCategoryClicked,
                         )
+                        MangaProgressCard(
+                            read = remember(state.chapters) { state.chapters.count { it.chapter.read } },
+                            total = state.chapters.size,
+                            onContinueReading = onContinueReading,
+                        )
                         ExpandableMangaDescription(
                             defaultExpandState = true,
                             description = state.manga.description,
@@ -742,18 +771,27 @@ private fun LazyListScope.sharedChapterItems(
     onChapterSelected: (ChapterList.Item, Boolean, Boolean) -> Unit,
     onChapterSwipe: (ChapterList.Item, LibraryPreferences.ChapterSwipeAction) -> Unit,
 ) {
-    items(
+    itemsIndexed(
         items = chapters,
-        key = { item ->
+        key = { _, item ->
             when (item) {
                 is ChapterList.MissingCount -> "missing-count-${item.id}"
                 is ChapterList.Item -> "chapter-${item.id}"
             }
         },
-        contentType = { MangaScreenItem.CHAPTER },
-    ) { item ->
+        contentType = { _, _ -> MangaScreenItem.CHAPTER },
+    ) { index, item ->
         val haptic = LocalHapticFeedback.current
+        val opensGroup = index == 0 || chapters[index - 1] !is ChapterList.Item
+        val closesGroup = index == chapters.lastIndex || chapters[index + 1] !is ChapterList.Item
+        val position = when {
+            opensGroup && closesGroup -> GroupPosition.Single
+            opensGroup -> GroupPosition.First
+            closesGroup -> GroupPosition.Last
+            else -> GroupPosition.Middle
+        }
 
+        CompositionLocalProvider(LocalGroupPosition provides position) {
         when (item) {
             is ChapterList.MissingCount -> {
                 MissingChapterCountListItem(count = item.count)
@@ -808,6 +846,7 @@ private fun LazyListScope.sharedChapterItems(
                     },
                 )
             }
+        }
         }
     }
 }

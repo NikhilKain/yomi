@@ -1,0 +1,15 @@
+-- The favorite timestamp trigger fired on every sync write, because `AFTER UPDATE OF favorite`
+-- fires whenever the column is named in the SET list regardless of whether the value changed.
+-- That restamped favorite_modified_at on every row of every sync, which destroyed the only signal
+-- distinguishing "the user removed this from their library" from "another device still has it",
+-- so removed entries came back on the next cycle. Recreate it with the same is_syncing guard the
+-- version trigger already uses.
+DROP TRIGGER IF EXISTS update_last_favorited_at_mangas;
+
+CREATE TRIGGER update_last_favorited_at_mangas
+AFTER UPDATE OF favorite ON mangas
+BEGIN
+  UPDATE mangas
+  SET favorite_modified_at = strftime('%s', 'now')
+  WHERE _id = new._id AND new.is_syncing = 0;
+END;

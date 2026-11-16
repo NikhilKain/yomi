@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import tachiyomi.presentation.core.components.yomi.SoftGap
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.Button
 import tachiyomi.presentation.core.components.material.ButtonDefaults
@@ -69,13 +70,7 @@ fun MangaNotesSection(
             }
         }
 
-        HorizontalDivider(
-            modifier = Modifier
-                .padding(
-                    top = if (expanded) 0.dp else 12.dp,
-                    bottom = if (expanded) 16.dp else 12.dp,
-                ),
-        )
+        SoftGap(height = if (expanded) 16.dp else 12.dp)
     }
 }
 

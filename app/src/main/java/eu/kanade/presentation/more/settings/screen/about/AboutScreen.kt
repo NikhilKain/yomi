@@ -26,6 +26,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.more.LogoHeader
+import eu.kanade.presentation.more.settings.widget.PreferenceGroupHeader
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.presentation.util.LocalBackPress
 import eu.kanade.presentation.util.Screen
@@ -49,6 +50,8 @@ import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.release.interactor.GetApplicationRelease
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.yomi.GroupPosition
+import tachiyomi.presentation.core.components.yomi.groupItem
 import tachiyomi.presentation.core.components.LinkIcon
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -88,11 +91,11 @@ object AboutScreen : Screen() {
             ) {
                 item {
                     LogoHeader(
-                        iconPadding = PaddingValues(vertical = 56.dp),
+                        iconPadding = PaddingValues(bottom = 12.dp),
                     )
                 }
 
-                item {
+                groupItem(GroupPosition.First) {
                     TextPreferenceWidget(
                         title = stringResource(MR.strings.version),
                         subtitle = getVersionName(withBuildDate = true),
@@ -104,7 +107,7 @@ object AboutScreen : Screen() {
                 }
 
                 if (updaterEnabled) {
-                    item {
+                    groupItem(GroupPosition.Middle) {
                         TextPreferenceWidget(
                             title = stringResource(MR.strings.check_for_updates),
                             widget = {
@@ -143,7 +146,7 @@ object AboutScreen : Screen() {
                 }
 
                 if (!BuildConfig.DEBUG) {
-                    item {
+                    groupItem(GroupPosition.Middle) {
                         TextPreferenceWidget(
                             title = stringResource(MR.strings.whats_new),
                             onPreferenceClick = { uriHandler.openUri(RELEASE_URL) },
@@ -151,20 +154,21 @@ object AboutScreen : Screen() {
                     }
                 }
 
-                item {
+                groupItem(GroupPosition.Middle) {
                     TextPreferenceWidget(
                         title = stringResource(MR.strings.licenses),
                         onPreferenceClick = { navigator.push(OpenSourceLicensesScreen()) },
                     )
                 }
 
-                item {
+                groupItem(GroupPosition.Last) {
                     TextPreferenceWidget(
                         title = stringResource(MR.strings.privacy_policy),
                         onPreferenceClick = { uriHandler.openUri("https://mihon.app/privacy/") },
                     )
                 }
 
+                item { PreferenceGroupHeader(stringResource(MR.strings.yomi_upstream_credits)) }
                 item {
                     Row(
                         modifier = Modifier

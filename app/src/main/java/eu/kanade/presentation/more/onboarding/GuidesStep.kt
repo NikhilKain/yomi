@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
@@ -34,19 +36,18 @@ internal class GuidesStep(
         ) {
             Text(stringResource(MR.strings.onboarding_guides_new_user, stringResource(MR.strings.app_name)))
             Button(
+                shapes = ButtonDefaults.shapes(),
                 modifier = Modifier.fillMaxWidth(),
                 onClick = { handler.openUri(GETTING_STARTED_URL) },
             ) {
                 Text(stringResource(MR.strings.getting_started_guide))
             }
 
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp),
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
+            Spacer(Modifier.height(12.dp))
 
             Text(stringResource(MR.strings.onboarding_guides_returning_user, stringResource(MR.strings.app_name)))
             Button(
+                shapes = ButtonDefaults.shapes(),
                 modifier = Modifier.fillMaxWidth(),
                 onClick = onRestoreBackup,
             ) {

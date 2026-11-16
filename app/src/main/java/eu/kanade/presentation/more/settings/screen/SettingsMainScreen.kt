@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ChromeReaderMode
+import androidx.compose.material.icons.outlined.CloudSync
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.CollectionsBookmark
 import androidx.compose.material.icons.outlined.Explore
@@ -44,7 +45,11 @@ import eu.kanade.presentation.more.settings.screen.about.AboutScreen
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.presentation.util.LocalBackPress
 import eu.kanade.presentation.util.Screen
+import eu.kanade.presentation.util.yomiReveal
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.yomi.GroupPosition
+import tachiyomi.presentation.core.components.yomi.LocalGroupPosition
+import tachiyomi.presentation.core.components.yomi.groupPosition
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 import cafe.adriel.voyager.core.screen.Screen as VoyagerScreen
@@ -80,7 +85,7 @@ object SettingsMainScreen : Screen() {
         val topBarState = rememberTopAppBarState()
 
         Scaffold(
-            topBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topBarState),
+            topBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topBarState),
             topBar = { scrollBehavior ->
                 AppBar(
                     title = stringResource(MR.strings.label_settings),
@@ -143,9 +148,13 @@ object SettingsMainScreen : Screen() {
                                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                             }
                         }
-                        CompositionLocalProvider(LocalContentColor provides contentColor) {
+                        CompositionLocalProvider(
+                            LocalContentColor provides contentColor,
+                            LocalGroupPosition provides
+                                if (twoPane) GroupPosition.Single else groupPosition(index, items.size),
+                        ) {
                             TextPreferenceWidget(
-                                modifier = modifier,
+                                modifier = modifier.yomiReveal(index),
                                 title = stringResource(item.titleRes),
                                 subtitle = item.formatSubtitle(),
                                 icon = item.icon,
@@ -212,6 +221,12 @@ object SettingsMainScreen : Screen() {
             subtitleRes = MR.strings.pref_backup_summary,
             icon = Icons.Outlined.Storage,
             screen = SettingsDataScreen,
+        ),
+        Item(
+            titleRes = MR.strings.pref_category_sync,
+            subtitleRes = MR.strings.pref_sync_summary,
+            icon = Icons.Outlined.CloudSync,
+            screen = SettingsSyncScreen,
         ),
         Item(
             titleRes = MR.strings.pref_category_security,

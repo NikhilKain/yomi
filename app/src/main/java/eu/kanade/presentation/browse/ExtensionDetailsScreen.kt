@@ -56,6 +56,7 @@ import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.ui.browse.extension.details.ExtensionDetailsViewModel
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import tachiyomi.presentation.core.components.yomi.SoftGap
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -366,7 +367,7 @@ private fun DetailsHeader(
             },
         )
 
-        HorizontalDivider()
+        SoftGap()
     }
 }
 
@@ -406,9 +407,7 @@ private fun InfoText(
 
 @Composable
 private fun InfoDivider() {
-    VerticalDivider(
-        modifier = Modifier.height(20.dp),
-    )
+    androidx.compose.foundation.layout.Spacer(Modifier.size(width = 16.dp, height = 0.dp))
 }
 
 @Composable

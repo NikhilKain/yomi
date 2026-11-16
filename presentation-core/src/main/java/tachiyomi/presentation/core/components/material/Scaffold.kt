@@ -36,11 +36,13 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
@@ -48,6 +50,8 @@ import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.fastMaxBy
 import kotlin.math.max
+
+val LocalYomiDockClearance = staticCompositionLocalOf { 0.dp }
 
 /**
  * <a href="https://material.io/design/layout/understanding-layout.html" class="external" target="_blank">Material Design layout</a>.
@@ -99,8 +103,9 @@ import kotlin.math.max
 @Composable
 fun Scaffold(
     modifier: Modifier = Modifier,
-    topBarScrollBehavior: TopAppBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(
-        rememberTopAppBarState(),
+    topBarScrollBehavior: TopAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+        // No limit until a collapsing bar registers one, so plain headers never swallow scroll.
+        rememberTopAppBarState(initialHeightOffsetLimit = 0f),
     ),
     topBar: @Composable (TopAppBarScrollBehavior) -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
@@ -136,6 +141,7 @@ fun Scaffold(
             snackbar = snackbarHost,
             contentWindowInsets = remainingWindowInsets,
             fab = floatingActionButton,
+            dockClearance = LocalYomiDockClearance.current,
         )
     }
 }
@@ -163,6 +169,7 @@ private fun ScaffoldLayout(
     fab: @Composable () -> Unit,
     contentWindowInsets: WindowInsets,
     bottomBar: @Composable () -> Unit,
+    dockClearance: Dp,
 ) {
     SubcomposeLayout { constraints ->
         val layoutWidth = constraints.maxWidth
@@ -178,7 +185,7 @@ private fun ScaffoldLayout(
         layout(layoutWidth, layoutHeight) {
             val leftInset = contentWindowInsets.getLeft(this@SubcomposeLayout, layoutDirection)
             val rightInset = contentWindowInsets.getRight(this@SubcomposeLayout, layoutDirection)
-            val bottomInset = contentWindowInsets.getBottom(this@SubcomposeLayout)
+            val bottomInset = max(contentWindowInsets.getBottom(this@SubcomposeLayout), dockClearance.roundToPx())
 
             // Tachiyomi: Add startBar slot for Navigation Rail
             val startBarPlaceables = subcompose(ScaffoldLayoutContent.StartBar, startBar).fastMap {
@@ -269,9 +276,9 @@ private fun ScaffoldLayout(
                     },
                     // Tachiyomi: Also take account of fab height when providing inner padding
                     bottom = if (bottomBarPlaceables.isEmpty() || bottomBarHeightPx == 0) {
-                        max(insets.calculateBottomPadding(), fabOffsetDp)
+                        max(max(insets.calculateBottomPadding(), dockClearance), fabOffsetDp)
                     } else {
-                        max(bottomBarHeightPx.toDp(), fabOffsetDp)
+                        max(max(bottomBarHeightPx.toDp(), dockClearance), fabOffsetDp)
                     },
                     start = max(
                         insets.calculateStartPadding((this@SubcomposeLayout).layoutDirection),

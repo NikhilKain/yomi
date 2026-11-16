@@ -2,7 +2,7 @@ package eu.kanade.presentation.reader.settings
 
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.material3.FilterChip
+import tachiyomi.presentation.core.components.yomi.ChoiceChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -49,7 +49,7 @@ internal fun ColumnScope.GeneralPage(viewModel: ReaderSettingsViewModel) {
 
     SettingsChipRow(MR.strings.pref_reader_theme) {
         themes.map { (labelRes, value) ->
-            FilterChip(
+            ChoiceChip(
                 selected = readerTheme == value,
                 onClick = { viewModel.preferences.readerTheme.set(value) },
                 label = { Text(stringResource(labelRes)) },
@@ -66,7 +66,7 @@ internal fun ColumnScope.GeneralPage(viewModel: ReaderSettingsViewModel) {
 
     SettingsChipRow(MR.strings.pref_vertical_navigator) {
         ReadingMode.entries.filter { it != ReadingMode.DEFAULT }.forEach { mode ->
-            FilterChip(
+            ChoiceChip(
                 selected = verticalNavigatorModes.contains(mode),
                 onClick = {
                     val newModes = if (verticalNavigatorModes.contains(mode)) {
@@ -157,7 +157,7 @@ internal fun ColumnScope.GeneralPage(viewModel: ReaderSettingsViewModel) {
         )
         SettingsChipRow(MR.strings.pref_flash_with) {
             flashColors.map { (labelRes, value) ->
-                FilterChip(
+                ChoiceChip(
                     selected = flashColor == value,
                     onClick = { flashColorPref.set(value) },
                     label = { Text(stringResource(labelRes)) },

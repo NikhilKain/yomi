@@ -9,6 +9,7 @@ import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
+import eu.kanade.tachiyomi.ui.reader.viewer.pager.FlipScroller
 import eu.kanade.tachiyomi.util.system.hasDisplayCutout
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.pluralStringResource
@@ -193,11 +194,15 @@ object SettingsReaderScreen : SearchableSettings {
         val imageScaleTypePref = readerPreferences.imageScaleType
         val dualPageSplitPref = readerPreferences.dualPageSplitPaged
         val rotateToFitPref = readerPreferences.dualPageRotateToFit
+        val bookModePref = readerPreferences.bookModeLandscape
 
+        val pageFlip by readerPreferences.pageFlipAnimation.collectAsState()
+        val pageFlipSpeed by readerPreferences.pageFlipSpeed.collectAsState()
         val navMode by navModePref.collectAsState()
         val imageScaleType by imageScaleTypePref.collectAsState()
         val dualPageSplit by dualPageSplitPref.collectAsState()
         val rotateToFit by rotateToFitPref.collectAsState()
+        val bookMode by bookModePref.collectAsState()
 
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.pager_viewer),
@@ -250,10 +255,43 @@ object SettingsReaderScreen : SearchableSettings {
                     enabled = navMode != 5,
                 ),
                 Preference.PreferenceItem.SwitchPreference(
+                    preference = bookModePref,
+                    title = stringResource(MR.strings.pref_book_mode),
+                    subtitle = stringResource(MR.strings.pref_book_mode_summary),
+                    onValueChanged = {
+                        // Pairing whole pages and cutting a wide page in half are opposing views of
+                        // what a page is; running both leaves the reader pairing half-pages.
+                        if (it) {
+                            dualPageSplitPref.set(false)
+                            rotateToFitPref.set(false)
+                        }
+                        true
+                    },
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = readerPreferences.bookModeCoverAlone,
+                    title = stringResource(MR.strings.pref_book_mode_cover_alone),
+                    enabled = bookMode,
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = readerPreferences.pageFlipAnimation,
+                    title = stringResource(MR.strings.pref_page_flip_animation),
+                ),
+                Preference.PreferenceItem.SliderPreference(
+                    value = pageFlipSpeed,
+                    valueRange = FlipScroller.MIN_SPEED..FlipScroller.MAX_SPEED,
+                    steps = 10,
+                    title = stringResource(MR.strings.pref_page_flip_speed),
+                    valueString = "$pageFlipSpeed%",
+                    enabled = pageFlip,
+                    onValueChanged = { readerPreferences.pageFlipSpeed.set(it) },
+                ),
+                Preference.PreferenceItem.SwitchPreference(
                     preference = dualPageSplitPref,
                     title = stringResource(MR.strings.pref_dual_page_split),
                     onValueChanged = {
                         rotateToFitPref.set(false)
+                        if (it) bookModePref.set(false)
                         true
                     },
                 ),

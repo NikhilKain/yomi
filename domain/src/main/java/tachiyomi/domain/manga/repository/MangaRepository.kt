@@ -20,6 +20,14 @@ interface MangaRepository {
 
     suspend fun getReadMangaNotInLibrary(): List<Manga>
 
+    /**
+     * Every manga whose library membership was ever toggled, including ones since removed. Sync
+     * needs the removed ones as tombstones: an entry that is no longer a favorite and has no read
+     * chapters appears in no other query, so without this it drops out of the payload entirely and
+     * the other device's stale copy silently wins.
+     */
+    suspend fun getMangasWithFavoriteTimestamp(): List<Manga>
+
     suspend fun getLibraryManga(): List<LibraryManga>
 
     fun getLibraryMangaAsFlow(): Flow<List<LibraryManga>>

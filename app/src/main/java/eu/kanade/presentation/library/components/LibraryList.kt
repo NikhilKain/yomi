@@ -16,6 +16,7 @@ import tachiyomi.presentation.core.util.plus
 @Composable
 internal fun LibraryList(
     items: List<LibraryItem>,
+    spotlight: (@Composable () -> Unit)? = null,
     contentPadding: PaddingValues,
     selection: Set<Long>,
     onClick: (LibraryManga) -> Unit,
@@ -28,6 +29,7 @@ internal fun LibraryList(
         modifier = Modifier.fillMaxSize(),
         contentPadding = contentPadding + PaddingValues(vertical = 8.dp),
     ) {
+        if (spotlight != null) item(key = "yomi-spotlight") { spotlight() }
         item {
             if (!searchQuery.isNullOrEmpty()) {
                 GlobalSearchItem(

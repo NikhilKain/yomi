@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import eu.kanade.core.preference.PreferenceMutableState
+import eu.kanade.presentation.util.isTabletUi
 import eu.kanade.tachiyomi.ui.library.LibraryItem
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.model.LibraryDisplayMode
@@ -42,6 +43,7 @@ fun LibraryPager(
     onClickManga: (Category, LibraryManga) -> Unit,
     onLongClickManga: (Category, LibraryManga) -> Unit,
     onClickContinueReading: ((LibraryManga) -> Unit)?,
+    onSpotlightRead: (LibraryManga) -> Unit,
 ) {
     HorizontalPager(
         modifier = Modifier.fillMaxSize(),
@@ -78,10 +80,26 @@ fun LibraryPager(
         val onClickManga: (LibraryManga) -> Unit = { onClickManga(category, it) }
         val onLongClickManga: (LibraryManga) -> Unit = { onLongClickManga(category, it) }
 
+        val portrait = LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT
+        val tablet = isTabletUi()
+        val recent = remember(items, searchQuery, selection, portrait, tablet) {
+            if (portrait && !tablet && searchQuery.isNullOrEmpty() && selection.isEmpty()) {
+                items.asSequence().map { it.libraryManga }
+                    .sortedByDescending { it.lastRead }.take(4).toList()
+            } else {
+                emptyList()
+            }
+        }
+        val spotlight: (@Composable () -> Unit)? = if (recent.isEmpty()) {
+            null
+        } else {
+            { YomiReadingDeck(recent, onClickManga, onSpotlightRead) }
+        }
         when (displayMode) {
             LibraryDisplayMode.List -> {
                 LibraryList(
                     items = items,
+                    spotlight = spotlight,
                     contentPadding = contentPadding,
                     selection = selection,
                     onClick = onClickManga,
@@ -94,6 +112,7 @@ fun LibraryPager(
             LibraryDisplayMode.CompactGrid, LibraryDisplayMode.CoverOnlyGrid -> {
                 LibraryCompactGrid(
                     items = items,
+                    spotlight = spotlight,
                     showTitle = displayMode is LibraryDisplayMode.CompactGrid,
                     columns = columns,
                     contentPadding = contentPadding,
@@ -108,6 +127,7 @@ fun LibraryPager(
             LibraryDisplayMode.ComfortableGrid -> {
                 LibraryComfortableGrid(
                     items = items,
+                    spotlight = spotlight,
                     columns = columns,
                     contentPadding = contentPadding,
                     selection = selection,

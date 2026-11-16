@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.ui.reader.viewer.pager
 
 import android.content.Context
+import android.content.res.Configuration
 import android.view.HapticFeedbackConstants
 import android.view.KeyEvent
 import android.view.MotionEvent
@@ -26,6 +27,19 @@ open class Pager(
      * Long tap listener function to execute when a long tap is detected.
      */
     var longTapListener: ((MotionEvent) -> Boolean)? = null
+
+    /**
+     * Called when the device configuration changes, in practice a rotation.
+     *
+     * The reader keeps its activity across rotations, so this view is the only thing that hears
+     * about one, and whether pages are paired into spreads depends on the orientation.
+     */
+    var configurationChangedListener: (() -> Unit)? = null
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        configurationChangedListener?.invoke()
+    }
 
     /**
      * Gesture listener that implements tap and long tap events.

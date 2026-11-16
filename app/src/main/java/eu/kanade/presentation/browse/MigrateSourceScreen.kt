@@ -16,6 +16,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.runtime.CompositionLocalProvider
+import tachiyomi.presentation.core.components.yomi.LocalGroupPosition
+import tachiyomi.presentation.core.components.yomi.groupPosition
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -127,10 +131,11 @@ private fun MigrateSourceList(
             }
         }
 
-        items(
+        itemsIndexed(
             items = list,
-            key = { (source, _) -> "migrate-${source.id}" },
-        ) { (source, count) ->
+            key = { _, (source, _) -> "migrate-${source.id}" },
+        ) { index, (source, count) ->
+            CompositionLocalProvider(LocalGroupPosition provides groupPosition(index, list.size)) {
             MigrateSourceItem(
                 modifier = Modifier.animateItem(),
                 source = source,
@@ -138,6 +143,7 @@ private fun MigrateSourceList(
                 onClickItem = { onClickItem(source) },
                 onLongClickItem = { onLongClickItem(source) },
             )
+            }
         }
     }
 }
@@ -172,7 +178,7 @@ private fun MigrateSourceItem(
                     text = source.name.ifBlank { source.id.toString() },
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.titleMedium,
                 )
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),

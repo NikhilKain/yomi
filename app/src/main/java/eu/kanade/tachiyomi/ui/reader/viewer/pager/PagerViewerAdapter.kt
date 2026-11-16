@@ -4,6 +4,7 @@ import android.view.View
 import android.view.ViewGroup
 import eu.kanade.tachiyomi.ui.reader.model.ChapterTransition
 import eu.kanade.tachiyomi.ui.reader.model.InsertPage
+import eu.kanade.tachiyomi.ui.reader.model.PageSpread
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
@@ -99,18 +100,63 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
         // Resets double-page splits, else insert pages get misplaced
         items.filterIsInstance<InsertPage>().also { items.removeAll(it) }
 
+        // Group before the reversal, so pairing follows reading order rather than screen order.
+        val grouped = if (viewer.isBookMode) groupIntoSpreads(newItems) else newItems
+
         if (viewer is R2LPagerViewer) {
-            newItems.reverse()
+            grouped.reverse()
         }
 
         preprocessed = mutableMapOf()
-        items = newItems
+        items = grouped
         notifyDataSetChanged()
 
         // Will skip insert page otherwise
         if (insertPageLastPage != null) {
             viewer.moveToPage(insertPageLastPage)
         }
+    }
+
+    /**
+     * Pairs consecutive pages into facing spreads, leaving everything else untouched.
+     *
+     * Pairing restarts at each chapter, and never runs across a chapter transition, because a
+     * spread made of the last page of one chapter and the first of the next is not a spread — it is
+     * two unrelated drawings sharing a screen, and it would knock every following pair out of step.
+     */
+    private fun groupIntoSpreads(source: List<Any>): MutableList<Any> {
+        val result = mutableListOf<Any>()
+        val run = mutableListOf<ReaderPage>()
+
+        fun flushRun() {
+            if (run.isEmpty()) return
+
+            var index = 0
+            if (viewer.config.bookModeCoverAlone) {
+                // A closed book shows its cover on the turnable side with nothing facing it, so the
+                // cover goes in the second slot. Putting it first would leave the opening with no
+                // leaf to turn and knock every later pair out of step.
+                result.add(PageSpread(null, run[0]))
+                index = 1
+            }
+            while (index < run.size) {
+                result.add(PageSpread(run[index], run.getOrNull(index + 1)))
+                index += 2
+            }
+            run.clear()
+        }
+
+        source.forEach { item ->
+            if (item is ReaderPage && (run.isEmpty() || run.last().chapter == item.chapter)) {
+                run.add(item)
+            } else {
+                flushRun()
+                if (item is ReaderPage) run.add(item) else result.add(item)
+            }
+        }
+        flushRun()
+
+        return result
     }
 
     /**
@@ -121,11 +167,40 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
     }
 
     /**
+     * Position of the item holding [page], whether that is the page itself or the spread it is
+     * paired into.
+     */
+    fun positionOf(page: ReaderPage): Int = items.indexOfFirst {
+        it === page || (it is PageSpread && page in it)
+    }
+
+    /**
+     * The page printed on the reverse of the leaf that [position]'s opening is turned by, which is
+     * the first page of the opening after it in reading order.
+     *
+     * Reading order is not list order in a right-to-left book: the items are reversed so that the
+     * pager's own idea of "forward" runs the other way, which puts the next opening one index
+     * *back*. Null at a chapter boundary, where the leaf has nothing meaningful on its reverse.
+     */
+    private fun nextLeafPage(position: Int): ReaderPage? {
+        val step = if (viewer is R2LPagerViewer) -1 else 1
+        return (items.getOrNull(position + step) as? PageSpread)?.first
+    }
+
+    /** Every page on screen at [position], in reading order. */
+    fun pagesAt(position: Int): List<ReaderPage> = when (val item = items.getOrNull(position)) {
+        is PageSpread -> item.pages
+        is ReaderPage -> listOf(item)
+        else -> emptyList()
+    }
+
+    /**
      * Creates a new view for the item at the given [position].
      */
     override fun createView(container: ViewGroup, position: Int): View {
         return when (val item = items[position]) {
             is ReaderPage -> PagerPageHolder(readerThemedContext, viewer, item)
+            is PageSpread -> PagerSpreadHolder(readerThemedContext, viewer, item, nextLeafPage(position))
             is ChapterTransition -> PagerTransitionHolder(readerThemedContext, viewer, item)
             else -> throw NotImplementedError("Holder for ${item.javaClass} not implemented")
         }
@@ -147,6 +222,10 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
     }
 
     fun onPageSplit(currentPage: Any?, newPage: InsertPage) {
+        // Splitting a wide page in two and pairing pages into spreads are opposite operations on
+        // the same list. Letting a split fire while spreads are built would insert a bare page into
+        // a list of spreads, which desynchronises every index after it.
+        if (viewer.isBookMode) return
         if (currentPage !is ReaderPage) return
 
         val currentIndex = items.indexOf(currentPage)

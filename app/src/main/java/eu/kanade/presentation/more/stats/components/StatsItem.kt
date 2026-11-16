@@ -1,35 +1,40 @@
 package eu.kanade.presentation.more.stats.components
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.material3.Icon
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import tachiyomi.presentation.core.components.material.SECONDARY_ALPHA
-import tachiyomi.presentation.core.components.material.padding
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.graphics.shapes.RoundedPolygon
+import eu.kanade.presentation.theme.NumeralFamily
+import tachiyomi.presentation.core.components.yomi.ShapeBadge
 
+/** A headline figure: a shaped icon, the number set large, and what it counts. */
 @Composable
 fun RowScope.StatsOverviewItem(
     title: String,
     subtitle: String,
     icon: ImageVector,
+    polygon: RoundedPolygon = MaterialShapes.Cookie9Sided,
 ) {
-    BaseStatsItem(
+    StatTile(
         title = title,
-        titleStyle = MaterialTheme.typography.titleLarge,
+        titleStyle = MaterialTheme.typography.headlineLarge,
         subtitle = subtitle,
-        subtitleStyle = MaterialTheme.typography.bodyMedium,
         icon = icon,
+        polygon = polygon,
     )
 }
 
@@ -38,52 +43,47 @@ fun RowScope.StatsItem(
     title: String,
     subtitle: String,
 ) {
-    BaseStatsItem(
+    StatTile(
         title = title,
-        titleStyle = MaterialTheme.typography.bodyMedium,
+        titleStyle = MaterialTheme.typography.headlineSmall,
         subtitle = subtitle,
-        subtitleStyle = MaterialTheme.typography.labelSmall,
     )
 }
 
 @Composable
-private fun RowScope.BaseStatsItem(
+private fun RowScope.StatTile(
     title: String,
     titleStyle: TextStyle,
     subtitle: String,
-    subtitleStyle: TextStyle,
     icon: ImageVector? = null,
+    polygon: RoundedPolygon = MaterialShapes.Cookie9Sided,
 ) {
     Column(
         modifier = Modifier
             .weight(1f)
-            .fillMaxHeight(),
-        verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .fillMaxHeight()
+            .clip(MaterialTheme.shapes.large)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .padding(horizontal = 14.dp, vertical = 14.dp),
     ) {
+        if (icon != null) {
+            ShapeBadge(icon = icon, polygon = polygon, size = 40.dp)
+            Spacer(Modifier.height(12.dp))
+        }
         Text(
             text = title,
-            style = titleStyle
-                .copy(fontWeight = FontWeight.Bold),
-            textAlign = TextAlign.Center,
+            fontFamily = NumeralFamily,
+            style = titleStyle,
+            color = MaterialTheme.colorScheme.primary,
             maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
         Text(
             text = subtitle,
-            style = subtitleStyle
-                .copy(
-                    color = MaterialTheme.colorScheme.onSurface
-                        .copy(alpha = SECONDARY_ALPHA),
-                ),
-            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis,
         )
-        if (icon != null) {
-            Spacer(modifier = Modifier.weight(1f))
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-            )
-        }
     }
 }

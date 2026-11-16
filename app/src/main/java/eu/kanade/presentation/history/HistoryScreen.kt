@@ -8,6 +8,10 @@ import androidx.compose.material.icons.outlined.DeleteSweep
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.foundation.lazy.itemsIndexed
+import tachiyomi.presentation.core.components.yomi.LocalGroupPosition
+import tachiyomi.presentation.core.components.yomi.groupPositionOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -102,16 +106,18 @@ private fun HistoryScreenContent(
     FastScrollLazyColumn(
         contentPadding = contentPadding,
     ) {
-        items(
+        itemsIndexed(
             items = history,
-            key = { "history-${it.hashCode()}" },
-            contentType = {
+            key = { _, it -> "history-${it.hashCode()}" },
+            contentType = { _, it ->
                 when (it) {
                     is HistoryUiModel.Header -> "header"
                     is HistoryUiModel.Item -> "item"
                 }
             },
-        ) { item ->
+        ) { index, item ->
+            val position = groupPositionOf(history, index) { it is HistoryUiModel.Item }
+            CompositionLocalProvider(LocalGroupPosition provides position) {
             when (item) {
                 is HistoryUiModel.Header -> {
                     ListGroupHeader(
@@ -130,6 +136,7 @@ private fun HistoryScreenContent(
                         onClickFavorite = { onClickFavorite(value) },
                     )
                 }
+            }
             }
         }
     }

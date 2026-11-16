@@ -25,6 +25,7 @@ fun ReaderTopBar(
 ) {
     AppBar(
         modifier = modifier,
+        compact = true,
         backgroundColor = Color.Transparent,
         title = mangaTitle,
         subtitle = chapterTitle,

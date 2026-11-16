@@ -37,12 +37,16 @@ CREATE INDEX library_favorite_index ON mangas(favorite) WHERE favorite = 1;
 CREATE INDEX mangas_url_index ON mangas(url);
 CREATE INDEX idx_mangas_source ON mangas(source);
 
+-- Fires whenever `favorite` appears in an UPDATE's SET list, even when the value is unchanged, so
+-- it has to skip rows being written by a sync. Without the is_syncing guard every sync restamped
+-- every row and the timestamp stopped meaning "when the user last added or removed this", which is
+-- the only thing that lets a removal on one device beat a stale copy on another.
 CREATE TRIGGER update_last_favorited_at_mangas
 AFTER UPDATE OF favorite ON mangas
 BEGIN
   UPDATE mangas
   SET favorite_modified_at = strftime('%s', 'now')
-  WHERE _id = new._id;
+  WHERE _id = new._id AND new.is_syncing = 0;
 END;
 
 CREATE TRIGGER update_last_modified_at_mangas
@@ -252,6 +256,16 @@ UPDATE mangas SET
     is_syncing = coalesce(:isSyncing, is_syncing),
     notes = coalesce(:notes, notes),
     memo = coalesce(:memo, memo)
+WHERE _id = :mangaId;
+
+-- Writes the library membership a sync merge decided on, together with the timestamp that decision
+-- was based on, so the receiving device carries the same evidence and does not re-litigate it on
+-- the next cycle. Only safe to call on a row already marked is_syncing, or the trigger above will
+-- overwrite the timestamp with "now".
+updateFavoriteState:
+UPDATE mangas SET
+    favorite = :favorite,
+    favorite_modified_at = :favoriteModifiedAt
 WHERE _id = :mangaId;
 
 insertNetworkManga {
