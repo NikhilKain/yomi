@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <plurals name="yomi_new_chapters_recent">
+        <item quantity="one">%d new chapter in the last two weeks</item>
+        <item quantity="other">%d new chapters in the last two weeks</item>
+    </plurals>
+
     <plurals name="yomi_library_count">
         <item quantity="one">%d title in your collection</item>
         <item quantity="other">%d titles in your collection</item>

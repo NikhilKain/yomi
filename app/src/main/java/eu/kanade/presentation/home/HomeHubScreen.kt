@@ -70,6 +70,7 @@ import tachiyomi.presentation.core.components.yomi.YomiGutter
 import tachiyomi.presentation.core.components.yomi.bouncyPress
 import tachiyomi.presentation.core.components.yomi.groupPosition
 import tachiyomi.presentation.core.components.yomi.reveal
+import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import java.time.LocalTime
 
@@ -97,7 +98,11 @@ fun HomeHubScreen(
         Greeting(
             subtitle = when {
                 state.loading -> null
-                state.freshChapters > 0 -> stringResource(MR.strings.yomi_unread_waiting, state.freshChapters)
+                state.freshChapters > 0 -> pluralStringResource(
+                    MR.plurals.yomi_new_chapters_recent,
+                    state.freshChapters,
+                    state.freshChapters,
+                )
                 state.libraryCount > 0 -> stringResource(MR.strings.yomi_nothing_new)
                 else -> null
             },

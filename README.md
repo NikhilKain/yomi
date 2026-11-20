@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src=".github/readme/logo.png" alt="Yomi logo" width="120">
+
 # Yomi
 
 **A manga, webtoon and comic reader for Android, redesigned in Material 3 Expressive.**
@@ -10,6 +12,29 @@ Version **0.2.0** · `com.manga.yomi` · Android 8.0+
 [Telegram](https://t.me/vythera_apps) ·
 [Report a bug](https://vythera-feedback.narzo9990.workers.dev/?app=yomi&type=bug&source=github) ·
 [Buy me a coffee](https://polar.sh/checkout/polar_c_f0b0Tx0FTsUflgvnJTs09hmm6Va1x5ghbnwY34AIE8L)
+
+<table>
+  <tr>
+    <td><img src=".github/readme/screenshots/home.png" alt="Home" width="240"></td>
+    <td><img src=".github/readme/screenshots/library.png" alt="Library in the bento grid" width="240"></td>
+    <td><img src=".github/readme/screenshots/series.png" alt="A series page" width="240"></td>
+  </tr>
+  <tr>
+    <td align="center">Home</td>
+    <td align="center">Library, bento grid</td>
+    <td align="center">Series</td>
+  </tr>
+  <tr>
+    <td><img src=".github/readme/screenshots/discover.png" alt="Discover" width="240"></td>
+    <td><img src=".github/readme/screenshots/you.png" alt="You" width="240"></td>
+    <td><img src=".github/readme/screenshots/support.png" alt="Support and more from Vythera" width="240"></td>
+  </tr>
+  <tr>
+    <td align="center">Discover</td>
+    <td align="center">You</td>
+    <td align="center">Support</td>
+  </tr>
+</table>
 
 </div>
 
