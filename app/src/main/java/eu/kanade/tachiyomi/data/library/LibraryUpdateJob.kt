@@ -120,7 +120,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
             try {
                 updateChapterList()
                 // New chapters just landed, so push them out before the other devices ask.
-                if (Injekt.get<SyncPreferences>().syncOnLibraryUpdate().get()) {
+                if (Injekt.get<SyncPreferences>().let { it.syncAutomatically().get() && it.syncOnLibraryUpdate().get() }) {
                     SyncDataJob.startNow(context)
                 }
                 Result.success()

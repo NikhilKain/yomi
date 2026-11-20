@@ -78,6 +78,7 @@ data object UpdatesTab : Tab {
             onCalendarClicked = { navigator.push(UpcomingScreen()) },
             onFilterClicked = viewModel::showFilterDialog,
             hasActiveFilters = state.hasActiveFilters,
+            navigateUp = if (navigator.lastItem == this@UpdatesTab) { { navigator.pop() } } else { null },
         )
 
         val onDismissDialog = { viewModel.setDialog(null) }
@@ -116,7 +117,7 @@ data object UpdatesTab : Tab {
         }
 
         LaunchedEffect(state.selectionMode) {
-            HomeScreen.showBottomNav(!state.selectionMode)
+            if (navigator.lastItem != this@UpdatesTab) HomeScreen.showBottomNav(!state.selectionMode)
         }
 
         LaunchedEffect(state.isLoading) {

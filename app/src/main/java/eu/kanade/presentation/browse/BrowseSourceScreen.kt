@@ -18,6 +18,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import eu.kanade.presentation.browse.components.BrowseSourceComfortableGrid
 import eu.kanade.presentation.browse.components.BrowseSourceCompactGrid
+import eu.kanade.presentation.library.components.BrowseSourceBentoGrid
 import eu.kanade.presentation.browse.components.BrowseSourceList
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.util.formattedMessage
@@ -123,6 +124,14 @@ fun BrowseSourceContent(
         onRefresh = mangaList::refresh,
     ) {
         when (displayMode) {
+            LibraryDisplayMode.BentoGrid -> {
+                BrowseSourceBentoGrid(
+                    mangaList = mangaList,
+                    contentPadding = contentPadding,
+                    onMangaClick = onMangaClick,
+                    onMangaLongClick = onMangaLongClick,
+                )
+            }
             LibraryDisplayMode.ComfortableGrid -> {
                 BrowseSourceComfortableGrid(
                     mangaList = mangaList,

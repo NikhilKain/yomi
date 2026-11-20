@@ -47,6 +47,9 @@ class BasePreferences(
 
     val installationId: Preference<String> = preferenceStore.getString(Preference.appStateKey("installation_id"), "")
 
+    // Yomi: save a report to the storage folder whenever the app crashes.
+    val saveCrashLogs: Preference<Boolean> = preferenceStore.getBoolean("yomi_save_crash_logs", true)
+
     val donationCampaignShown: Preference<Boolean> = preferenceStore.getBoolean(
         Preference.appStateKey("donation_campaign_shown"),
         false,

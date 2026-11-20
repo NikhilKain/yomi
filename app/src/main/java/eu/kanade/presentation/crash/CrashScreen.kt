@@ -1,5 +1,11 @@
 package eu.kanade.presentation.crash
 
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.runtime.remember
+import eu.kanade.domain.base.BasePreferences
+import eu.kanade.presentation.more.FeedbackLink
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -43,6 +49,23 @@ fun CrashScreen(
         rejectText = stringResource(MR.strings.crash_screen_restart_application),
         onRejectClick = onRestartClick,
     ) {
+        val saved = remember {
+            runCatching { Injekt.get<BasePreferences>().saveCrashLogs.get() }.getOrDefault(false)
+        }
+        if (saved) {
+            Text(
+                text = stringResource(MR.strings.yomi_crash_saved),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(vertical = MaterialTheme.padding.small),
+            )
+        }
+        FilledTonalButton(
+            onClick = { FeedbackLink.open(context, FeedbackLink.Type.Bug) },
+            modifier = Modifier.padding(vertical = MaterialTheme.padding.small),
+        ) {
+            Text(stringResource(MR.strings.yomi_report_crash))
+        }
         Box(
             modifier = Modifier
                 .padding(vertical = MaterialTheme.padding.small)

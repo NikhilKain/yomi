@@ -22,9 +22,11 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Text
@@ -38,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -88,9 +91,8 @@ object HomeScreen : Screen() {
     private const val TabNavigatorKey = "HomeTabs"
 
     private val TABS = listOf(
+        HomeHubTab,
         LibraryTab,
-        UpdatesTab,
-        HistoryTab,
         BrowseTab,
         MoreTab,
     )
@@ -99,14 +101,14 @@ object HomeScreen : Screen() {
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         TabNavigator(
-            tab = LibraryTab,
+            tab = HomeHubTab,
             key = TabNavigatorKey,
         ) { tabNavigator ->
             val context = LocalContext.current
             val backHint = stringResource(MR.strings.yomi_back_to_exit)
             var lastBack by remember { mutableLongStateOf(0L) }
             LaunchedEffect(tabNavigator.current, navigator.canPop) { lastBack = 0L }
-            BackHandler(enabled = !navigator.canPop && tabNavigator.current == LibraryTab) {
+            BackHandler(enabled = !navigator.canPop && tabNavigator.current == HomeHubTab) {
                 val now = SystemClock.elapsedRealtime()
                 if (lastBack != 0L && now - lastBack < 2_000) {
                     (context as? android.app.Activity)?.finish()
@@ -152,7 +154,7 @@ object HomeScreen : Screen() {
                                             tabNavigator.current = tab
                                         }
                                     },
-                                    icon = { NavigationIconItem(it) },
+                                    icon = { tab, tint -> NavigationIconItem(tab, tint, Modifier.size(21.dp)) },
                                 )
                             }
                         }
@@ -203,9 +205,9 @@ object HomeScreen : Screen() {
 
             val goToLibraryTab = { tabNavigator.current = LibraryTab }
 
-            PredictiveBackHandler(enabled = !navigator.canPop && tabNavigator.current != LibraryTab) { progress ->
+            PredictiveBackHandler(enabled = !navigator.canPop && tabNavigator.current != HomeHubTab) { progress ->
                 progress.collect {}
-                goToLibraryTab()
+                tabNavigator.current = HomeHubTab
             }
 
             LaunchedEffect(Unit) {
@@ -217,10 +219,16 @@ object HomeScreen : Screen() {
                 }
                 launch {
                     openTabEvent.receiveAsFlow().collectLatest {
+                        // Updates and History live inside Home now; they open as full screens.
+                        if (it == Tab.Updates || it == Tab.History) {
+                            tabNavigator.current = HomeHubTab
+                            val screen = if (it == Tab.Updates) UpdatesTab else HistoryTab
+                            if (navigator.lastItem != screen) navigator.push(screen)
+                            return@collectLatest
+                        }
                         tabNavigator.current = when (it) {
                             is Tab.Library -> LibraryTab
-                            Tab.Updates -> UpdatesTab
-                            Tab.History -> HistoryTab
+                            Tab.Updates, Tab.History -> HomeHubTab
                             is Tab.Browse -> {
                                 if (it.toExtensions) {
                                     BrowseTab.showExtension()
@@ -271,11 +279,15 @@ object HomeScreen : Screen() {
     }
 
     @Composable
-    private fun NavigationIconItem(tab: eu.kanade.presentation.util.Tab) {
+    private fun NavigationIconItem(
+        tab: eu.kanade.presentation.util.Tab,
+        tint: Color = LocalContentColor.current,
+        modifier: Modifier = Modifier,
+    ) {
         BadgedBox(
             badge = {
                 when {
-                    tab is UpdatesTab -> {
+                    tab is HomeHubTab -> {
                         val count by produceState(initialValue = 0) {
                             val pref = Injekt.get<LibraryPreferences>()
                             combine(
@@ -323,6 +335,8 @@ object HomeScreen : Screen() {
             Icon(
                 painter = tab.options.icon!!,
                 contentDescription = tab.options.title,
+                modifier = modifier,
+                tint = tint,
             )
         }
     }

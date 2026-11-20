@@ -12,6 +12,9 @@ class SyncPreferences(
     // Which backend is active. NONE means sync is switched off entirely.
     fun syncBackend(): Preference<SyncBackend> = preferenceStore.getEnum("sync_service", SyncBackend.NONE)
 
+    // Yomi: one switch for every automatic trigger (schedule, app start, library update, reader).
+    fun syncAutomatically(): Preference<Boolean> = preferenceStore.getBoolean("sync_automatic", true)
+
     // How often the background job runs, in minutes. 0 means manual only.
     fun syncInterval(): Preference<Int> = preferenceStore.getInt("sync_interval", 60)
 
@@ -80,8 +83,8 @@ class SyncPreferences(
     // region Google Drive
 
     /**
-     * OAuth client ID the user creates in their own Google Cloud project. Kept as a preference
-     * rather than a build constant so it can be changed without rebuilding the app.
+     * Optional OAuth client ID from the user's own Google Cloud project. When blank, Yomi uses the
+     * client built into the app, so most people never see this.
      */
     fun googleDriveClientId(): Preference<String> = preferenceStore.getString("sync_gdrive_client_id", "")
 

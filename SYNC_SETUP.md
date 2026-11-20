@@ -1,98 +1,77 @@
-# Cloud sync setup
+# Cloud sync
 
-This fork syncs your library, reading progress, categories, history, tracking, extension
-repositories and settings between devices through **your own** Google Drive. Nothing is uploaded
-anywhere else, and there is no server to run.
+Yomi syncs your library, reading progress, categories, history, tracking, extension repositories and
+settings between devices through **your own** Google Drive. There is no Yomi server. The app can
+only see the one file it creates in your Drive (`drive.file` scope).
 
-This build does not ship shared Google OAuth credentials. Create an OAuth client for
-your own Google Cloud
-project.
+## For people using Yomi
 
----
+1. **Settings → Sync → Sign in with Google**.
+2. Pick your account in the browser and allow access. The browser says "Signed in — you can close
+   this tab".
+3. Do the same on every other device with the same Google account.
 
-## What this build is
+That is all. The first device uploads its library as the starting point (`yomi_sync.tachibk` in your
+Drive). Every other device merges its own library with it on its first sync; nothing is wiped.
 
-| | |
-|---|---|
-| Application ID | `com.manga.yomi` (installs alongside stock Mihon) |
-| Signing keystore | `D:\Project_keys\yomi\key` |
-| Key alias | `yomi` |
-| Certificate SHA-1 | `CC:16:1D:E1:03:0C:C0:AD:4D:E9:D3:7E:1D:B3:40:D1:19:8F:E2:99` |
-| OAuth client type | **Desktop app** |
-| OAuth redirect | `http://127.0.0.1:<port>` — handled automatically, nothing to register |
-
-Use the same keystore for every device. The OAuth client no longer depends on the signing
-certificate, but Android still refuses to install an update over an app signed with a different key,
-so losing the `.jks` means every device has to uninstall and start over. The SHA-1 above is recorded
-only for reference.
-
-### Why "Desktop app" and not "Android"
-
-Google **disables custom URI scheme redirects on Android OAuth clients** and rejects them with
-`Error 400: invalid_request — this app doesn't comply with Google's OAuth 2.0 policy`. Google's
-documented replacement for Android is the Play Services sign-in SDK, which this fork deliberately
-does not depend on.
-
-The flow Google *does* still commit to supporting for a self-built app is the **loopback IP flow on
-a Desktop app client**. The app opens a one-shot HTTP listener on `127.0.0.1`, sends you to the
-browser, and catches the redirect locally. Nothing listens on an externally reachable interface, and
-the port is chosen fresh each time. No redirect URI has to be registered, because Google accepts any
-loopback port for a Desktop client.
+**Automatic sync** is on by default: Yomi syncs when it opens, after you read and every hour. Turn it
+off to sync only with **Sync now**. Everything else (schedule, Wi-Fi or charging only, what to sync,
+extensions, using your own Google project) is under **Advanced options**.
 
 ---
 
-## 1. Create the Google OAuth client
+## For the owner: Yomi's built-in sign-in
 
-1. Go to <https://console.cloud.google.com/> and create a project (any name, e.g. `mihon-sync`).
+Yomi ships with one Google OAuth client so users never touch Google Cloud. You create it once.
 
-2. Enable the Drive API: **APIs & Services → Library → Google Drive API → Enable**.
+**Use a separate Google account for this** (for example a Vythera developer account), not your
+personal one. The client cannot be used to get into any account, but if it were ever abused Google
+would act on the project, and that should stay away from your personal account.
 
-3. Configure the consent screen: **APIs & Services → OAuth consent screen**
-   - User type: **External**
-   - App name, your support email, your developer email — that is all that is required.
-   - On the **Scopes** step you do not need to add anything. The app requests
-     `drive.file` and `email`, both of which are **non-sensitive**, so Google will never ask you to
-     verify the app.
-   - Add your own Google account under **Test users**.
-   - Then **publish the app** (`Publishing status → In production`). This is important: while the
-     app is in *Testing*, Google expires refresh tokens after 7 days and you would have to sign in
-     again every week. Because the scopes are non-sensitive, publishing needs no review and takes
-     effect immediately.
+1. Go to <https://console.cloud.google.com/> signed in with that account and create a project, for
+   example `yomi-sync`. **Do not attach a billing account.** The Drive API is free.
+2. **APIs & Services → Library → Google Drive API → Enable.**
+3. **APIs & Services → OAuth consent screen** (Google Auth Platform → Branding / Audience):
+   - App name `Yomi`, a support email, a developer contact email.
+   - Audience: **External**.
+   - Data access / scopes: add `.../auth/drive.file` and `.../auth/userinfo.email`. Both are
+     non-sensitive, so Google does not need to review the app.
+   - Do **not** upload a logo yet: a logo triggers brand verification. Add it later if you want.
+   - **Publish** the app (Audience → Publishing status → *In production*). In *Testing*, sign-ins
+     expire after 7 days and only listed test users can sign in.
+4. **Credentials → Create credentials → OAuth client ID**, application type **Desktop app**, name
+   `Yomi Android`. Nothing else to fill in.
+5. Copy the **Client ID** and **Client secret** into a new file outside the repository,
+   `D:\Project_keys\yomi\gdrive-client.properties`:
 
-4. Create the client: **APIs & Services → Credentials → Create credentials → OAuth client ID**
-   - Application type: **Desktop app**
-   - Name it anything.
-   - There is nothing else to fill in — no package name, no SHA-1, no redirect URI.
+   ```properties
+   clientId=1234567890-abc.apps.googleusercontent.com
+   clientSecret=GOCSPX-...
+   ```
 
-5. Copy both the **Client ID** (`...apps.googleusercontent.com`) and the **Client secret**
-   (`GOCSPX-...`).
+6. Build as usual. `build/yomi-logs/build-yomi.sh` reads that file into `YOMI_GDRIVE_CLIENT_ID` and
+   `YOMI_GDRIVE_CLIENT_SECRET`, which Gradle turns into `BuildConfig` fields. The values never go into
+   Git. Any other build (CI, a release script) only needs those two environment variables.
 
-> If you already made an **Android** client, delete it or just leave it unused — it will not work
-> for this flow.
+Without the file the app still works: **Sign in with Google** is disabled with a note, and users can
+enter their own Google Cloud client under **Advanced options**.
 
----
+**Why a Desktop app client.** Google rejects custom URI scheme redirects for Android clients, and its
+Android replacement needs Play Services, which Yomi avoids. A Desktop client allows the loopback flow:
+Yomi opens a one-shot listener on `127.0.0.1`, sends you to the browser and catches the redirect
+locally, with PKCE.
 
-## 2. Set up the first device
-
-1. Install the APK.
-2. **Settings → Sync**.
-3. Paste the **Client ID** and the **Client secret**. Both are required for a Desktop app client.
-4. Tap **Sign in with Google**, pick your account, and allow access.
-5. The browser shows "Signed in — you can close this tab". Go back to the app.
-
-The app immediately uploads your current library as the starting point. It creates one file in your
-Drive called `yomi_sync.tachibk`.
-
-## 3. Set up every other device
-
-Same APK, same steps, same Google account. On the first sync the device pulls the shared library
-down and merges it with whatever is already on that device — nothing is wiped.
+**If the client ever leaks or is abused**, nobody can reach anyone's account with it. In the worst
+case Google limits or suspends the project, and sync stops until you create a new secret
+(Credentials → the client → *Add secret*, then delete the old one), update the properties file and
+ship a new build. Users then sign in once more.
 
 ---
 
 ## When it syncs
 
-All of these are individually toggleable under **Settings → Sync**:
+With **Automatic sync** on (the default), Yomi syncs at these moments. Each one can be changed under
+**Settings → Sync → Advanced options**:
 
 - On a schedule — every hour by default, adjustable from 15 minutes to daily, or manual only
 - When the app opens
@@ -144,7 +123,7 @@ stay local to each device.
 ## Things to be aware of
 
 - **The sync file is a real backup.** `yomi_sync.tachibk` in your Drive is a byte-for-byte valid
-  Mihon backup. You can download it and feed it to **Restore backup** at any time, including if you
+  Yomi backup. You can download it and feed it to **Restore backup** at any time, including if you
   ever abandon this fork.
 - **Sensitive settings are excluded by default.** Tracker login tokens are only included if you turn
   on *Include sensitive settings*. Everything goes to your own private Drive either way.

@@ -289,7 +289,7 @@ class ReaderViewModel @JvmOverloads constructor(
         if (incognitoMode) return
 
         val syncPreferences = Injekt.get<SyncPreferences>()
-        if (!syncPreferences.isSyncEnabled() || !syncPreferences.syncOnChapterRead().get()) return
+        if (!syncPreferences.isSyncEnabled() || !syncPreferences.syncAutomatically().get() || !syncPreferences.syncOnChapterRead().get()) return
 
         SyncDataJob.startNow(Injekt.get<Application>())
     }

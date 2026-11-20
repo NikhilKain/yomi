@@ -41,7 +41,7 @@ class GoogleDriveSyncService(
         } catch (e: SerializationException) {
             // A truncated or foreign file is not something we can merge against. Refusing here is
             // safer than treating it as "no remote data", which would clobber it on the next push.
-            throw IOException("The sync file in Google Drive is corrupt or not a Mihon backup", e)
+            throw IOException("The sync file in Google Drive is corrupt or not a Yomi backup", e)
         }
 
         return RemoteSnapshot(

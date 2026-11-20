@@ -37,14 +37,27 @@ android {
     defaultConfig {
         applicationId = if (yomiValidation) "com.manga.yomi.validation" else "com.manga.yomi"
 
-        versionCode = 40
-        versionName = "1.0.0"
+        // A new release lineage: never upgrade the incompatible original Yomi database.
+        versionCode = if (yomiValidation) 42 else 2
+        versionName = "0.2.0"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getLatestCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getLatestCommitSha()}\"")
         buildConfigField("String", "BUILD_TIME", "\"${getBuildTime(useLatestCommitTime = false)}\"")
         buildConfigField("boolean", "TELEMETRY_INCLUDED", "${Config.includeTelemetry}")
         buildConfigField("boolean", "UPDATER_ENABLED", "false")
+        // Yomi's built-in Google Drive sign-in. Supplied at build time from outside the repository
+        // (see SYNC_SETUP.md); left empty, the app falls back to the user's own client.
+        buildConfigField(
+            "String",
+            "GDRIVE_CLIENT_ID",
+            "\"${providers.environmentVariable("YOMI_GDRIVE_CLIENT_ID").orElse("").get().trim()}\"",
+        )
+        buildConfigField(
+            "String",
+            "GDRIVE_CLIENT_SECRET",
+            "\"${providers.environmentVariable("YOMI_GDRIVE_CLIENT_SECRET").orElse("").get().trim()}\"",
+        )
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import eu.kanade.core.preference.PreferenceMutableState
-import eu.kanade.presentation.util.isTabletUi
 import eu.kanade.tachiyomi.ui.library.LibraryItem
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.model.LibraryDisplayMode
@@ -80,22 +79,21 @@ fun LibraryPager(
         val onClickManga: (LibraryManga) -> Unit = { onClickManga(category, it) }
         val onLongClickManga: (LibraryManga) -> Unit = { onLongClickManga(category, it) }
 
-        val portrait = LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT
-        val tablet = isTabletUi()
-        val recent = remember(items, searchQuery, selection, portrait, tablet) {
-            if (portrait && !tablet && searchQuery.isNullOrEmpty() && selection.isEmpty()) {
-                items.asSequence().map { it.libraryManga }
-                    .sortedByDescending { it.lastRead }.take(4).toList()
-            } else {
-                emptyList()
-            }
-        }
-        val spotlight: (@Composable () -> Unit)? = if (recent.isEmpty()) {
-            null
-        } else {
-            { YomiReadingDeck(recent, onClickManga, onSpotlightRead) }
-        }
+        // The reading deck lives on Home now; the shelf is only the shelf.
+        val spotlight: (@Composable () -> Unit)? = null
         when (displayMode) {
+            LibraryDisplayMode.BentoGrid -> {
+                LibraryBentoGrid(
+                    items = items,
+                    contentPadding = contentPadding,
+                    selection = selection,
+                    onClick = onClickManga,
+                    onLongClick = onLongClickManga,
+                    onClickContinueReading = onClickContinueReading,
+                    searchQuery = searchQuery,
+                    onGlobalSearchClicked = onGlobalSearchClicked,
+                )
+            }
             LibraryDisplayMode.List -> {
                 LibraryList(
                     items = items,

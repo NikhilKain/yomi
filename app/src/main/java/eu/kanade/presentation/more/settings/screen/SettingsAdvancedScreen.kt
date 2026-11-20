@@ -96,6 +96,11 @@ object SettingsAdvancedScreen : SearchableSettings {
                 },
             ),
             Preference.PreferenceItem.SwitchPreference(
+                preference = basePreferences.saveCrashLogs,
+                title = stringResource(MR.strings.yomi_save_crash_logs),
+                subtitle = stringResource(MR.strings.yomi_save_crash_logs_summary),
+            ),
+            Preference.PreferenceItem.SwitchPreference(
                 preference = networkPreferences.verboseLogging,
                 title = stringResource(MR.strings.pref_verbose_logging),
                 subtitle = stringResource(MR.strings.pref_verbose_logging_summary),

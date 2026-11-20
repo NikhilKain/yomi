@@ -21,7 +21,7 @@ class SetupSyncMigration : Migration {
 
         SyncDataJob.setupTask(context)
 
-        if (syncPreferences.isSyncEnabled() && syncPreferences.syncOnAppStart().get()) {
+        if (syncPreferences.isSyncEnabled() && syncPreferences.syncAutomatically().get() && syncPreferences.syncOnAppStart().get()) {
             SyncDataJob.startNow(context)
         }
 

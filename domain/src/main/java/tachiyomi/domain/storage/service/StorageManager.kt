@@ -62,8 +62,14 @@ class StorageManager(
     fun getLocalSourceDirectory(): UniFile? {
         return baseDir?.createDirectory(LOCAL_SOURCE_PATH)
     }
+
+    /** Yomi: where crash reports are saved, next to backups and downloads. */
+    fun getCrashLogsDirectory(): UniFile? {
+        return baseDir?.createDirectory(CRASH_LOGS_PATH)
+    }
 }
 
 private const val AUTOMATIC_BACKUPS_PATH = "autobackup"
 private const val DOWNLOADS_PATH = "downloads"
 private const val LOCAL_SOURCE_PATH = "local"
+private const val CRASH_LOGS_PATH = "logs"

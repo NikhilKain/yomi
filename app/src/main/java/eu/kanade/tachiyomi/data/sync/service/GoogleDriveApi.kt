@@ -174,16 +174,25 @@ class GoogleDriveApi(
      * Google then rejects as `invalid_request`. Strip that (and any stray slashes) rather than
      * making the user hunt for an invisible prefix.
      */
-    private fun clientId(): String = syncPreferences.googleDriveClientId().get()
+    private fun ownClientId(): String = syncPreferences.googleDriveClientId().get()
         .trim()
         .removePrefix("https://")
         .removePrefix("http://")
         .trim('/')
         .trim()
 
+    /** The user's own client when they set one, otherwise the one built into Yomi. */
+    private fun clientId(): String = ownClientId().ifBlank { BuildConfig.GDRIVE_CLIENT_ID }
+
+    private fun clientSecret(): String = if (ownClientId().isNotBlank()) {
+        syncPreferences.googleDriveClientSecret().get().trim()
+    } else {
+        BuildConfig.GDRIVE_CLIENT_SECRET
+    }
+
     private fun buildTokenForm(vararg params: Pair<String, String>): String {
         val clientId = clientId()
-        val clientSecret = syncPreferences.googleDriveClientSecret().get().trim()
+        val clientSecret = clientSecret()
 
         val all = buildList {
             addAll(params)

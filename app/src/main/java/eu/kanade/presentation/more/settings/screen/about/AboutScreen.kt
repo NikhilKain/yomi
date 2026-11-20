@@ -57,11 +57,13 @@ import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.icons.CustomIcons
-import tachiyomi.presentation.core.icons.Discord
-import tachiyomi.presentation.core.icons.Facebook
+import eu.kanade.presentation.more.FeedbackSheet
+import eu.kanade.presentation.more.vytheraProjects
+import androidx.compose.material.icons.automirrored.outlined.Send
+import androidx.compose.material.icons.outlined.Feedback
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import tachiyomi.presentation.core.icons.Github
-import tachiyomi.presentation.core.icons.Reddit
-import tachiyomi.presentation.core.icons.X
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import kotlin.time.Instant
@@ -76,6 +78,7 @@ object AboutScreen : Screen() {
         val handleBack = LocalBackPress.current
         val navigator = LocalNavigator.currentOrThrow
         var isCheckingUpdates by remember { mutableStateOf(false) }
+        var showFeedback by remember { mutableStateOf(false) }
 
         Scaffold(
             topBar = { scrollBehavior ->
@@ -154,21 +157,23 @@ object AboutScreen : Screen() {
                     }
                 }
 
-                groupItem(GroupPosition.Middle) {
+                groupItem(GroupPosition.Last) {
                     TextPreferenceWidget(
                         title = stringResource(MR.strings.licenses),
                         onPreferenceClick = { navigator.push(OpenSourceLicensesScreen()) },
                     )
                 }
 
-                groupItem(GroupPosition.Last) {
+                item { Spacer(Modifier.height(12.dp)) }
+                groupItem(GroupPosition.Single) {
                     TextPreferenceWidget(
-                        title = stringResource(MR.strings.privacy_policy),
-                        onPreferenceClick = { uriHandler.openUri("https://mihon.app/privacy/") },
+                        title = stringResource(MR.strings.yomi_feedback),
+                        subtitle = stringResource(MR.strings.yomi_feedback_summary),
+                        icon = Icons.Outlined.Feedback,
+                        onPreferenceClick = { showFeedback = true },
                     )
                 }
 
-                item { PreferenceGroupHeader(stringResource(MR.strings.yomi_upstream_credits)) }
                 item {
                     Row(
                         modifier = Modifier
@@ -177,39 +182,22 @@ object AboutScreen : Screen() {
                         horizontalArrangement = Arrangement.Center,
                     ) {
                         LinkIcon(
-                            label = stringResource(MR.strings.website),
-                            icon = Icons.Outlined.Public,
-                            url = "https://mihon.app",
-                        )
-                        LinkIcon(
-                            label = "Discord",
-                            icon = CustomIcons.Discord,
-                            url = Constants.URL_DISCORD,
-                        )
-                        LinkIcon(
-                            label = "X",
-                            icon = CustomIcons.X,
-                            url = "https://x.com/mihonapp",
-                        )
-                        LinkIcon(
-                            label = "Facebook",
-                            icon = CustomIcons.Facebook,
-                            url = "https://facebook.com/mihonapp",
-                        )
-                        LinkIcon(
-                            label = "Reddit",
-                            icon = CustomIcons.Reddit,
-                            url = "https://www.reddit.com/r/mihonapp",
+                            label = "Telegram",
+                            icon = Icons.AutoMirrored.Outlined.Send,
+                            url = Constants.URL_TELEGRAM,
                         )
                         LinkIcon(
                             label = "GitHub",
                             icon = CustomIcons.Github,
-                            url = "https://github.com/mihonapp",
+                            url = "https://github.com/NikhilKain",
                         )
                     }
                 }
+
+                vytheraProjects()
             }
         }
+        if (showFeedback) FeedbackSheet(onDismissRequest = { showFeedback = false })
     }
 
     /**

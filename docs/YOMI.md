@@ -14,15 +14,43 @@ backups, extension installer, source access, settings and local reader. The
 owner snapshot adds Drive sync, PDF chapters, animated page turns, book spreads,
 and reader settings. New presentation work uses Hanami's sakura colors,
 variable typography, artwork spotlight and staggered motion. On phones, it
-keeps Yomi's floating dock with a clear sliding selection. Tablets still get
+uses a floating dock based on Stride's Verdant layout. The glass lens slides
+over the dock surface and magnifies it without adding blur. The selection uses
+the active Yomi theme's accent. Tablets still get
 the adaptive navigation rail.
 
-The installed original Yomi has a different database and local-book layout.
-Use the side-by-side build until a migration has been designed and tested:
-`-PyomiValidation=true` selects `com.manga.yomi.validation` for release or
-`com.manga.yomi.validation.dev` for debug. The normal release ID is
-`com.manga.yomi`. Do not install a normal release over the existing app as a
-migration shortcut.
+Yomi has four destinations instead of Mihon's five:
+
+- **Home** (`HomeHubTab`) shows a reading deck, shortcuts, new chapters,
+  recently read titles and titles not started yet. Mihon's Updates and History
+  screens open from Home as full screens with a back button. Shortcuts and
+  notifications that target Updates or History open those screens over Home.
+- **Library** keeps every Mihon category, sort, filter and display mode.
+- **Discover** is Mihon's Browse screen with sources, extensions and migration.
+  It adds a field at the top that searches every source.
+- **You** replaces More. Downloaded-only and incognito are large toggle tiles,
+  and the download queue, categories, stats, data, settings, about, support
+  and help links are all still there.
+
+## Release identity
+
+The owner selected the Mihon-based implementation as the continuing Yomi project
+on November 16, 2026. Its first release is **0.1.0**, application ID
+`com.manga.yomi`, version code **1**. The original 0.2.0 implementation is retired.
+The version-code reset deliberately prevents an in-place upgrade of its
+incompatible database. The owner removed that original phone installation.
+
+The previous Mihon-based preview uses `com.manga.yomi.validation.dev`.
+Changing the application ID does not transfer Android app data. Export a full
+`.tachibk` backup from the preview, select the same external storage directory in
+the release, then restore the backup and verify the library and reading progress.
+Keep the preview until verification finishes. Account secrets are excluded by the
+default backup settings and may require signing in again.
+
+`-PyomiValidation=true` remains available for isolated testing; it uses version
+code 41 and package `com.manga.yomi.validation` (release) or
+`com.manga.yomi.validation.dev` (debug). Do not run connected test runners against
+an owner's normal library installation.
 
 Use a JDK 21 Gradle runtime, Android SDK 37, and NDK 29.0.14206865. Run
 `./gradlew check` for repository checks. For the side-by-side build, run
@@ -46,10 +74,6 @@ Hanami is the owner's local design reference; Yomi retains its own branding.
 
 ## Validation status
 
-On November 14, 2026, the app's Kotlin and Java compiled and the SQLDelight
-debug and release migration checks completed. The Windows build stalled after
-debug dex generation while writing the Gradle build cache. A retry with a
-separate Gradle home and `--no-build-cache` passed dependency and resource
-preparation, then stalled while Gradle was clearing stale build outputs.
-No new APK was packaged, and neither the app unit suite nor the phone smoke
-checks can be reported as passing. The original Yomi remains installed.
+The November 16 expressive preview passed 80 host tests and module lint checks;
+see [redesign validation](EXPRESSIVE-REDESIGN.md). The 0.1.0 package migration and
+signed release verification are recorded separately after installation.

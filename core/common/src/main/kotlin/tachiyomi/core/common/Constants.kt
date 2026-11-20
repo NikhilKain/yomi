@@ -3,9 +3,8 @@ package tachiyomi.core.common
 object Constants {
     const val URL_HELP = "https://mihon.app/docs/guides/troubleshooting/"
     const val URL_HELP_UPCOMING = "https://mihon.app/docs/faq/updates/upcoming"
-    const val URL_DONATE_PATREON = "https://patreon.com/mihon/membership"
-    const val URL_DONATE_OPENCOLLECTIVE = "https://opencollective.com/mihon/contribute"
-    const val URL_DISCORD = "https://discord.gg/mihon"
+    const val URL_SUPPORT_COFFEE = "https://polar.sh/checkout/polar_c_f0b0Tx0FTsUflgvnJTs09hmm6Va1x5ghbnwY34AIE8L"
+    const val URL_TELEGRAM = "https://t.me/vythera_apps"
 
     const val MANGA_EXTRA = "manga"
 

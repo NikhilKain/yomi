@@ -8,6 +8,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
+import eu.kanade.presentation.components.YomiSearchField
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cafe.adriel.voyager.navigator.Navigator
@@ -37,8 +46,8 @@ data object BrowseTab : Tab {
             val isSelected = LocalTabNavigator.current.current.key == key
             val image = AnimatedImageVector.animatedVectorResource(R.drawable.anim_browse_enter)
             return TabOptions(
-                index = 3u,
-                title = stringResource(MR.strings.browse),
+                index = 2u,
+                title = stringResource(MR.strings.yomi_discover),
                 icon = rememberAnimatedVectorPainter(image, isSelected),
             )
         }
@@ -56,6 +65,8 @@ data object BrowseTab : Tab {
     @Composable
     override fun Content() {
         val context = LocalContext.current
+        val navigator = LocalNavigator.currentOrThrow
+        var everywhere by rememberSaveable { mutableStateOf("") }
 
         // Hoisted for extensions tab's search bar
         val extensionsViewModel = viewModel<ExtensionsViewModel>()
@@ -70,11 +81,20 @@ data object BrowseTab : Tab {
         val state = rememberPagerState { tabs.size }
 
         TabbedScreen(
-            titleRes = MR.strings.browse,
+            titleRes = MR.strings.yomi_discover,
             tabs = tabs,
             state = state,
             searchQuery = extensionsState.searchQuery,
             onChangeSearchQuery = extensionsViewModel::search,
+            header = {
+                YomiSearchField(
+                    query = everywhere,
+                    onQueryChange = { everywhere = it },
+                    placeholder = stringResource(MR.strings.yomi_search_everywhere),
+                    onSearch = { if (it.isNotBlank()) navigator.push(GlobalSearchScreen(it.trim())) },
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                )
+            },
         )
         LaunchedEffect(Unit) {
             switchToExtensionTabChannel.receiveAsFlow()

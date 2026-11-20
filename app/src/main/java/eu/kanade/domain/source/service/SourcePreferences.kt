@@ -15,7 +15,7 @@ class SourcePreferences(
 
     val sourceDisplayMode: Preference<LibraryDisplayMode> = preferenceStore.getObjectFromString(
         "pref_display_mode_catalogue",
-        LibraryDisplayMode.ComfortableGrid,
+        LibraryDisplayMode.BentoGrid,
         LibraryDisplayMode.Serializer::serialize,
         LibraryDisplayMode.Serializer::deserialize,
     )

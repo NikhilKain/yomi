@@ -27,6 +27,7 @@ enum class MangaCover(val ratio: Float) {
         contentDescription: String = "",
         shape: Shape = MaterialTheme.shapes.medium,
         onClick: (() -> Unit)? = null,
+        aspect: Float = ratio,
     ) {
         AsyncImage(
             model = data,
@@ -34,7 +35,7 @@ enum class MangaCover(val ratio: Float) {
             error = rememberResourceBitmapPainter(id = R.drawable.cover_error),
             contentDescription = contentDescription,
             modifier = modifier
-                .aspectRatio(ratio)
+                .aspectRatio(aspect)
                 .clip(shape)
                 .then(
                     if (onClick != null) {

@@ -96,6 +96,13 @@ fun BrowseSourceToolbar(
                 onDismissRequest = { selectingDisplayMode = false },
             ) {
                 RadioMenuItem(
+                    text = { Text(text = stringResource(MR.strings.yomi_display_bento)) },
+                    isChecked = displayMode == LibraryDisplayMode.BentoGrid,
+                ) {
+                    selectingDisplayMode = false
+                    onDisplayModeChange(LibraryDisplayMode.BentoGrid)
+                }
+                RadioMenuItem(
                     text = { Text(text = stringResource(MR.strings.action_display_comfortable_grid)) },
                     isChecked = displayMode == LibraryDisplayMode.ComfortableGrid,
                 ) {

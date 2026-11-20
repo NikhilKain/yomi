@@ -98,7 +98,7 @@ class SyncDataJob(private val context: Context, workerParams: WorkerParameters) 
             val syncPreferences = Injekt.get<SyncPreferences>()
             val interval = prefInterval ?: syncPreferences.syncInterval().get()
 
-            if (!syncPreferences.isSyncEnabled() || interval <= 0) {
+            if (!syncPreferences.isSyncEnabled() || !syncPreferences.syncAutomatically().get() || interval <= 0) {
                 context.workManager.cancelUniqueWork(TAG_AUTO)
                 return
             }

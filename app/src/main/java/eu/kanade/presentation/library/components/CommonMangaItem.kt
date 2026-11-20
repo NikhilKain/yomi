@@ -84,6 +84,8 @@ fun MangaCompactGridItem(
     coverAlpha: Float = 1f,
     coverBadgeStart: @Composable (RowScope.() -> Unit)? = null,
     coverBadgeEnd: @Composable (RowScope.() -> Unit)? = null,
+    ratio: Float = MangaCover.Book.ratio,
+    featured: Boolean = false,
 ) {
     GridItemSelectable(
         isSelected = isSelected,
@@ -97,14 +99,17 @@ fun MangaCompactGridItem(
                         .fillMaxWidth()
                         .alpha(if (isSelected) GRID_SELECTED_COVER_ALPHA else coverAlpha),
                     data = coverData,
+                    aspect = ratio,
                 )
             },
             badgesStart = coverBadgeStart,
+            ratio = ratio,
             badgesEnd = coverBadgeEnd,
             content = {
                 if (title != null) {
                     CoverTextOverlay(
                         title = title,
+                        featured = featured,
                         onClickContinueReading = onClickContinueReading,
                     )
                 } else if (onClickContinueReading != null) {
@@ -128,6 +133,7 @@ fun MangaCompactGridItem(
 @Composable
 private fun BoxScope.CoverTextOverlay(
     title: String,
+    featured: Boolean = false,
     onClickContinueReading: (() -> Unit)? = null,
 ) {
     Box(
@@ -139,7 +145,7 @@ private fun BoxScope.CoverTextOverlay(
                     1f to Color(0xAA000000),
                 ),
             )
-            .fillMaxHeight(0.33f)
+            .fillMaxHeight(if (featured) 0.6f else 0.33f)
             .fillMaxWidth()
             .align(Alignment.BottomCenter),
     )
@@ -152,7 +158,7 @@ private fun BoxScope.CoverTextOverlay(
                 .weight(1f)
                 .padding(8.dp),
             title = title,
-            style = MaterialTheme.typography.titleSmall.copy(
+            style = (if (featured) MaterialTheme.typography.headlineSmall else MaterialTheme.typography.titleSmall).copy(
                 color = Color.White,
                 shadow = Shadow(
                     color = Color.Black,
@@ -247,6 +253,7 @@ fun MangaComfortableGridItem(
 @Composable
 private fun MangaGridCover(
     modifier: Modifier = Modifier,
+    ratio: Float = MangaCover.Book.ratio,
     cover: @Composable BoxScope.() -> Unit = {},
     badgesStart: (@Composable RowScope.() -> Unit)? = null,
     badgesEnd: (@Composable RowScope.() -> Unit)? = null,
@@ -255,7 +262,7 @@ private fun MangaGridCover(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(MangaCover.Book.ratio),
+            .aspectRatio(ratio),
     ) {
         cover()
         content?.invoke(this)

@@ -26,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.ToggleButton
@@ -340,7 +341,11 @@ fun GroupSurface(
     ) {
         CompositionLocalProvider(
             LocalContentColor provides
-                if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
+                if (selected) {
+                    MaterialTheme.colorScheme.onSecondaryContainer
+                } else {
+                    contentColorFor(container)
+                },
             content = content,
         )
     }

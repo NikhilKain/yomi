@@ -1,80 +1,85 @@
 <div align="center">
 
-<a href="https://mihon.app">
-    <img src="./.github/assets/logo.png" alt="Mihon logo" title="Mihon logo" width="80"/>
-</a>
-
 # Yomi
 
-An independent Android reader fork of Mihon with Hanami-inspired presentation,
-Drive sync, animated page turns and book spreads. See the [Yomi build and
-migration notes](docs/YOMI.md) and [Drive sync setup](SYNC_SETUP.md).
+**A manga, webtoon and comic reader for Android, redesigned in Material 3 Expressive.**
 
-The original Mihon project information and credits follow.
+Version **0.2.0** · `com.manga.yomi` · Android 8.0+
 
-### Full-featured reader
-Discover and read manga, webtoons, comics, and more – easier than ever on your Android device.
-
-[![Discord server](https://img.shields.io/discord/1195734228319617024.svg?label=&labelColor=6A7EC2&color=7389D8&logo=discord&logoColor=FFFFFF)](https://discord.gg/mihon)
-[![GitHub downloads](https://img.shields.io/github/downloads/mihonapp/mihon/total?label=downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://mihon.app/download)
-
-[![CI](https://img.shields.io/github/actions/workflow/status/mihonapp/mihon/build.yml?labelColor=27303D)](https://github.com/mihonapp/mihon/actions/workflows/build_push.yml)
-[![License: Apache-2.0](https://img.shields.io/github/license/mihonapp/mihon?labelColor=27303D&color=0877d2)](/LICENSE)
-[![Translation status](https://img.shields.io/weblate/progress/mihon?labelColor=27303D&color=946300)](https://hosted.weblate.org/engage/mihon/)
-
-## Download
-
-[![Mihon Stable](https://img.shields.io/github/release/mihonapp/mihon.svg?maxAge=3600&label=Stable&labelColor=06599d&color=043b69)](https://mihon.app/download)
-[![Mihon Beta](https://img.shields.io/github/v/release/mihonapp/mihon-preview.svg?maxAge=3600&label=Beta&labelColor=2c2c47&color=1c1c39)](https://mihon.app/download)
-
-*Requires Android 8.0 or higher.*
-
-## Features
-
-<div align="left">
-
-* Local reading of content.
-* A configurable reader with multiple viewers, reading directions and other settings.
-* Tracker support: [MangaBaka](https://mangabaka.org), [MyAnimeList](https://myanimelist.net/), [AniList](https://anilist.co/), [Kitsu](https://kitsu.app/), [MangaUpdates](https://mangaupdates.com), [Shikimori](https://shikimori.one), [Bangumi](https://bgm.tv/), and [Hikka](https://hikka.io/) support.
-* Categories to organize your library.
-* Light and dark themes.
-* Schedule updating your library for new chapters.
-* Create backups locally to read offline or to your desired cloud service.
-* Plus much more...
+[Download](https://github.com/NikhilKain/yomi/releases/latest) ·
+[Telegram](https://t.me/vythera_apps) ·
+[Report a bug](https://vythera-feedback.narzo9990.workers.dev/?app=yomi&type=bug&source=github) ·
+[Buy me a coffee](https://polar.sh/checkout/polar_c_f0b0Tx0FTsUflgvnJTs09hmm6Va1x5ghbnwY34AIE8L)
 
 </div>
 
-## Contributing
+Yomi is a fork of [Mihon](https://github.com/mihonapp/mihon) with a new interface and a few
+features of its own. Every Mihon feature is still here: extensions and sources, the library with
+categories, filters and sorting, updates, history, downloads, tracking, backups, migration and the
+full reader.
 
-[Code of conduct](./CODE_OF_CONDUCT.md) · [Contributing guide](./CONTRIBUTING.md)
+## What's different
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+- **Four places instead of five.** *Home* answers "what do I read now?": a continue-reading deck,
+  new chapters, recently read and titles you haven't started. *Library*, *Discover* (sources,
+  extensions, migration and a search across every source) and *You* (reading modes, tools and
+  settings) cover the rest. Updates and History open from Home.
+- **Bento grid.** Library and source results can mix tile sizes, one wide feature, two halves and
+  three thirds. Comfortable grid, compact grid, cover-only grid and list are still one tap away.
+- **Material 3 Expressive throughout.** Shaped icons, connected button groups, spring motion, wavy
+  progress and large type, following the colour theme you pick.
+- **Google Drive sync.** Sign in with Google once and your library, progress, categories, history
+  and tracking stay the same on every device. Yomi can only see its own sync file in your Drive;
+  there is no Yomi server. See [SYNC_SETUP.md](SYNC_SETUP.md).
+- **Animated page turns, book spreads and PDF chapters** in the reader.
+- **Crash reports stay with you.** If Yomi crashes it saves a report in the `logs` folder of your
+  storage location, so you can attach it to a bug report. Nothing is sent anywhere by itself.
+- **Feedback from inside the app.** Report a bug, request a feature or send a message from Settings,
+  About or You.
 
-Before reporting a new issue, take a look at the [FAQ](https://mihon.app/docs/faq/general), the [changelog](https://mihon.app/changelogs/) and the already opened [issues](https://github.com/mihonapp/mihon/issues); if you got any questions, join our [Discord server](https://discord.gg/mihon).
+## Download
 
+Get the APK from [Releases](https://github.com/NikhilKain/yomi/releases/latest). Use
+`yomi-<version>-arm64-v8a.apk` on most phones, or the universal APK if you are unsure.
 
-### Repositories
+Yomi installs next to Mihon and does not touch its data. To move your library over, create a
+backup in Mihon (*More → Backup and restore*) and restore it in Yomi (*You → Data and storage*).
 
-[![mihonapp/website - GitHub](https://github-stats-extended.vercel.app/api/pin/?username=mihonapp&repo=website&bg_color=161B22&text_color=c9d1d9&title_color=0877d2&icon_color=0877d2&border_radius=8&hide_border=true&description_lines_count=2)](https://github.com/mihonapp/website/)
-[![mihonapp/bitmap.kt - GitHub](https://github-stats-extended.vercel.app/api/pin/?username=mihonapp&repo=bitmap.kt&bg_color=161B22&text_color=c9d1d9&title_color=0877d2&icon_color=0877d2&border_radius=8&hide_border=true&description_lines_count=2)](https://github.com/mihonapp/bitmap.kt/)
+## Building
 
-### Credits
+```bash
+./gradlew :app:assembleRelease
+```
 
-Thank you to all the people who have contributed!
+Release signing reads `YOMI_STORE_FILE`, `YOMI_STORE_PASSWORD`, `YOMI_KEY_ALIAS` and
+`YOMI_KEY_PASSWORD`. The built-in Google sign-in reads `YOMI_GDRIVE_CLIENT_ID` and
+`YOMI_GDRIVE_CLIENT_SECRET`; without them, sync still works with your own Google Cloud client.
+Notes on the fork are in [docs/YOMI.md](docs/YOMI.md).
 
-<a href="https://github.com/mihonapp/mihon/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=mihonapp/mihon" alt="Mihon app contributors" title="Mihon app contributors" width="800"/>
-</a>
+## Credits
 
-### Disclaimer
+Yomi is made by [Vythera](https://t.me/vythera_apps), with ❤️ for the community. It is built on
+[Mihon](https://github.com/mihonapp/mihon) and [Tachiyomi](https://github.com/tachiyomiorg), and
+would not exist without their contributors. Yomi is independent and not affiliated with Mihon.
+See [NOTICE](NOTICE) for attributions.
 
-The developer(s) of this application does not have any affiliation with the content providers available, and this application hosts zero content.
+More from Vythera: [Vyxel Apps](https://github.com/NikhilKain/vyxel-apps) ·
+[Stride](https://play.google.com/store/apps/details?id=com.vythera.stride) ·
+[Hanami](https://github.com/NikhilKain/hanami-app) ·
+[Auralis](https://play.google.com/store/apps/details?id=com.vythera.auralis) ·
+[Relay](https://play.google.com/store/apps/details?id=com.vythera.relay)
 
-### License
+## Disclaimer
+
+The developers of this application have no affiliation with any content providers, and this
+application hosts no content.
+
+## License
 
 <pre>
 Copyright © 2015 Javier Tomás
 Copyright © 2024 Mihon Open Source Project
+Copyright © 2026 Vythera
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -88,5 +93,3 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 </pre>
-
-</div>

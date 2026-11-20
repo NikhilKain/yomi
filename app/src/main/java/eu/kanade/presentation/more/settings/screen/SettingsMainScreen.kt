@@ -2,6 +2,8 @@ package eu.kanade.presentation.more.settings.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -12,6 +14,7 @@ import androidx.compose.material.icons.automirrored.outlined.ChromeReaderMode
 import androidx.compose.material.icons.outlined.CloudSync
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.CollectionsBookmark
+import androidx.compose.material.icons.outlined.Feedback
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.GetApp
 import androidx.compose.material.icons.outlined.Info
@@ -28,6 +31,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import eu.kanade.presentation.more.FeedbackSheet
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -122,6 +129,8 @@ object SettingsMainScreen : Screen() {
                     null
                 }
 
+                var showFeedback by remember { mutableStateOf(false) }
+                if (showFeedback) FeedbackSheet(onDismissRequest = { showFeedback = false })
                 LazyColumn(
                     state = state,
                     contentPadding = contentPadding,
@@ -159,6 +168,17 @@ object SettingsMainScreen : Screen() {
                                 subtitle = item.formatSubtitle(),
                                 icon = item.icon,
                                 onPreferenceClick = { navigator.navigate(item.screen, twoPane) },
+                            )
+                        }
+                    }
+                    item(key = "yomi-feedback") {
+                        Spacer(Modifier.height(12.dp))
+                        CompositionLocalProvider(LocalGroupPosition provides GroupPosition.Single) {
+                            TextPreferenceWidget(
+                                title = stringResource(MR.strings.yomi_feedback),
+                                subtitle = stringResource(MR.strings.yomi_feedback_summary),
+                                icon = Icons.Outlined.Feedback,
+                                onPreferenceClick = { showFeedback = true },
                             )
                         }
                     }

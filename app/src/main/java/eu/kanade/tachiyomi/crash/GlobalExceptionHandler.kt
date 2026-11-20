@@ -31,6 +31,7 @@ class GlobalExceptionHandler private constructor(
 
     override fun uncaughtException(thread: Thread, exception: Throwable) {
         logcat(priority = LogPriority.ERROR, throwable = exception)
+        runCatching { CrashLogWriter.write(applicationContext, thread, exception) }
         launchActivity(applicationContext, activityToBeLaunched, exception)
         defaultHandler.uncaughtException(thread, exception)
     }

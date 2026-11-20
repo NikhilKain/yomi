@@ -51,10 +51,11 @@ private data class GlassOptics(
     val magnification: Float,
 )
 private val DOCK_OPTICS = GlassOptics(6.dp, 22.dp, 36.dp, 1.5f, 1f)
-private val CLEAR_OPTICS = GlassOptics(0.dp, 10.dp, 3.dp, 1f, 1.045f)
+internal const val DockLensMagnification = 1.12f
+private val CLEAR_OPTICS = GlassOptics(0.dp, 10.dp, 5.dp, 1f, DockLensMagnification)
 private fun glassRim(clearLens: Boolean, tint: Color, dark: Boolean): Pair<Color, Color> =
     if (clearLens) {
-        tint.copy(alpha = .8f) to tint.copy(alpha = .32f)
+        tint.copy(alpha = .85f) to tint.copy(alpha = .28f)
     } else {
         Color.White.copy(alpha = if (dark) .35f else .8f) to Color.White.copy(alpha = if (dark) .06f else .25f)
     }
@@ -66,6 +67,7 @@ internal fun Modifier.strideGlass(
     tint: Color,
     backdrop: DockBackdrop,
     clearLens: Boolean = false,
+    output: DockBackdrop? = null,
 ): Modifier {
     val density = LocalDensity.current
     val dark = tint.luminance() < 0.5f
@@ -73,15 +75,15 @@ internal fun Modifier.strideGlass(
     // Only a breath of tint: the look should come from what's behind the bar,
     // bent and softened, not from a frosted overlay painted on top of it.
     val fill = if (clearLens) {
-        tint.copy(alpha = 0.065f)
+        tint.copy(alpha = 0.10f)
     } else {
         tint.copy(
             alpha = if (!canBlur) {
                 0.92f
             } else if (dark) {
-                0.14f
+                0.34f
             } else {
-                0.2f
+                0.42f
             },
         )
     }
@@ -97,6 +99,7 @@ internal fun Modifier.strideGlass(
     return this
         .onGloballyPositioned {
             origin = it.positionInRoot()
+            output?.origin = origin
         }
         .drawWithCache {
             val outline = shape.createOutline(size, layoutDirection, this)
@@ -137,6 +140,8 @@ internal fun Modifier.strideGlass(
             val specHeight = with(density) { 3.dp.toPx() }
             val magnificationPivot = Offset(pad + size.width / 2f, pad + size.height / 2f)
 
+            val layerSize = IntSize(ceil(size.width).toInt(), ceil(size.height).toInt())
+
             onDrawBehind {
                 val shift = backdrop.origin - origin
                 glass.record(padded) {
@@ -154,7 +159,12 @@ internal fun Modifier.strideGlass(
                         drawPath(clip, rimBrush, style = Stroke(width = rimWidth * 2))
                     }
                 }
-                paint()
+                if (output == null) {
+                    paint()
+                } else {
+                    output.layer.record(layerSize, block = paint)
+                    drawLayer(output.layer)
+                }
             }
         }
 }
@@ -275,7 +285,7 @@ uniform float depthEffect;
 half4 main(float2 coord) {
     float2 halfSize = size * 0.5;
     float2 centeredCoord = (coord + offset) - halfSize;
-    float radius = radiusAt(coord, cornerRadii);
+    float radius = radiusAt(centeredCoord, cornerRadii);
 
     float sd = sdRoundedRect(centeredCoord, halfSize, radius);
     if (-sd >= refractionHeight) {

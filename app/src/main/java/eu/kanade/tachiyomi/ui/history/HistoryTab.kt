@@ -73,6 +73,7 @@ data object HistoryTab : Tab {
             onClickResume = viewModel::getNextChapterForManga,
             onDialogChange = viewModel::setDialog,
             onClickFavorite = viewModel::addFavorite,
+            navigateUp = if (navigator.lastItem == this@HistoryTab) { { navigator.pop() } } else { null },
         )
 
         val onDismissRequest = { viewModel.setDialog(null) }

@@ -36,9 +36,9 @@ class AppUpdateChecker {
 
 val GITHUB_REPO: String by lazy {
     if (isPreviewBuildType) {
-        "mihonapp/mihon-preview"
+        "NikhilKain/yomi"
     } else {
-        "mihonapp/mihon"
+        "NikhilKain/yomi"
     }
 }
 
