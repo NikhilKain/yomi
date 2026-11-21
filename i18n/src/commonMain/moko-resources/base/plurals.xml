@@ -5,6 +5,11 @@
         <item quantity="other">%d new chapters in the last two weeks</item>
     </plurals>
 
+    <plurals name="yomi_update_every_n_days">
+        <item quantity="one">Every day</item>
+        <item quantity="other">Every %d days</item>
+    </plurals>
+
     <plurals name="yomi_library_count">
         <item quantity="one">%d title in your collection</item>
         <item quantity="other">%d titles in your collection</item>

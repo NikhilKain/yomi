@@ -38,8 +38,8 @@ android {
         applicationId = if (yomiValidation) "com.manga.yomi.validation" else "com.manga.yomi"
 
         // A new release lineage: never upgrade the incompatible original Yomi database.
-        versionCode = if (yomiValidation) 42 else 2
-        versionName = "0.2.0"
+        versionCode = if (yomiValidation) 43 else 3
+        versionName = "0.2.1"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getLatestCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getLatestCommitSha()}\"")
@@ -121,6 +121,8 @@ android {
             proguardFiles("proguard-android-optimize.txt", "proguard-rules.pro")
 
             buildConfigField("String", "BUILD_TIME", "\"${getBuildTime(useLatestCommitTime = true)}\"")
+            // Yomi: official releases look for new versions on GitHub; side-by-side test builds never do.
+            buildConfigField("boolean", "UPDATER_ENABLED", "${!yomiValidation}")
         }
 
         val commonMatchingFallbacks = listOf(release.name)
@@ -129,6 +131,7 @@ android {
             initWith(release)
 
             applicationIdSuffix = ".foss"
+            buildConfigField("boolean", "UPDATER_ENABLED", "false")
 
             matchingFallbacks.addAll(commonMatchingFallbacks)
         }
@@ -136,6 +139,7 @@ android {
             initWith(release)
 
             applicationIdSuffix = ".debug"
+            buildConfigField("boolean", "UPDATER_ENABLED", "false")
 
             versionNameSuffix = debug.versionNameSuffix
 
@@ -148,6 +152,7 @@ android {
 
             versionNameSuffix = "-benchmark"
             applicationIdSuffix = ".benchmark"
+            buildConfigField("boolean", "UPDATER_ENABLED", "false")
 
             matchingFallbacks.addAll(commonMatchingFallbacks)
         }

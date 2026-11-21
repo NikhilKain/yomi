@@ -5,6 +5,7 @@ object Constants {
     const val URL_HELP_UPCOMING = "https://mihon.app/docs/faq/updates/upcoming"
     const val URL_SUPPORT_COFFEE = "https://polar.sh/checkout/polar_c_f0b0Tx0FTsUflgvnJTs09hmm6Va1x5ghbnwY34AIE8L"
     const val URL_TELEGRAM = "https://t.me/vythera_apps"
+    const val URL_PRIVACY_POLICY = "https://github.com/NikhilKain/yomi/blob/main/PRIVACY.md"
 
     const val MANGA_EXTRA = "manga"
 

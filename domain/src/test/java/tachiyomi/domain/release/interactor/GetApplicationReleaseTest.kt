@@ -96,4 +96,17 @@ class GetApplicationReleaseTest {
 
         result shouldBe GetApplicationRelease.Result.NoNewUpdate
     }
+
+    @Test
+    fun `Older release with a larger patch number is not an update`() {
+        getApplicationRelease.isNewerSemVer("0.1.5", "0.2.0") shouldBe false
+    }
+
+    @Test
+    fun `Versions compare part by part`() {
+        getApplicationRelease.isNewerSemVer("0.10.0", "0.9.9") shouldBe true
+        getApplicationRelease.isNewerSemVer("0.2.1", "0.2.0") shouldBe true
+        getApplicationRelease.isNewerSemVer("0.2.0", "0.2.0") shouldBe false
+        getApplicationRelease.isNewerSemVer("1.0", "0.9.9") shouldBe true
+    }
 }

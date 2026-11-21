@@ -308,9 +308,14 @@ class MainActivity : BaseActivity() {
 
         // App updates
         LaunchedEffect(Unit) {
-            if (updaterEnabled) {
+            // Yomi: look for a release at most once per chosen interval (a day, a week, a month or custom).
+            val now = Clock.System.now().toEpochMilliseconds()
+            val interval = preferences.appUpdateIntervalDays.get().coerceIn(1, 365).days.inWholeMilliseconds
+            val due = now - preferences.lastAppUpdateCheck.get() >= interval
+            if (updaterEnabled && due) {
                 try {
                     val result = AppUpdateChecker().checkForUpdate()
+                    preferences.lastAppUpdateCheck.set(now)
                     if (result is GetApplicationRelease.Result.NewUpdate) {
                         val updateScreen = NewUpdateScreen(
                             versionName = result.release.version,

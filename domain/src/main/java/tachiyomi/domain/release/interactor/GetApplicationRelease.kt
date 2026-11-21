@@ -37,19 +37,23 @@ class GetApplicationRelease(
         } else {
             // Release builds: based on releases in "mihonapp/mihon" repo
             // tagged as something like "v0.1.2"
-            val oldVersion = versionName.replace("[^\\d.]".toRegex(), "")
-
-            val newSemVer = newVersion.split(".").map { it.toInt() }
-            val oldSemVer = oldVersion.split(".").map { it.toInt() }
-
-            oldSemVer.mapIndexed { index, i ->
-                if (newSemVer[index] > i) {
-                    return true
-                }
-            }
-
-            false
+            // Yomi: compare part by part, so 0.10.0 is newer than 0.9.9 and 0.1.5 is not newer than 0.2.0.
+            isNewerSemVer(newVersion, versionName.substringBefore('-'))
         }
+    }
+
+    internal fun isNewerSemVer(candidate: String, current: String): Boolean {
+        fun parts(version: String) = version.replace("[^\\d.]".toRegex(), "")
+            .split(".")
+            .map { it.toIntOrNull() ?: 0 }
+        val new = parts(candidate)
+        val old = parts(current)
+        for (index in 0..<maxOf(new.size, old.size)) {
+            val a = new.getOrElse(index) { 0 }
+            val b = old.getOrElse(index) { 0 }
+            if (a != b) return a > b
+        }
+        return false
     }
 
     data class Arguments(

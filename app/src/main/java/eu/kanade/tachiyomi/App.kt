@@ -35,6 +35,7 @@ import eu.kanade.tachiyomi.data.coil.MangaCoverKeyer
 import eu.kanade.tachiyomi.data.coil.MangaKeyer
 import eu.kanade.tachiyomi.data.coil.TachiyomiImageDecoder
 import eu.kanade.tachiyomi.data.notification.Notifications
+import eu.kanade.tachiyomi.data.usage.UsageCheckIn
 import eu.kanade.tachiyomi.di.AppModule
 import eu.kanade.tachiyomi.di.PreferenceModule
 import eu.kanade.tachiyomi.network.NetworkHelper
@@ -102,6 +103,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         setupNotificationChannels()
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+        UsageCheckIn.install(this)
 
         val scope = ProcessLifecycleOwner.get().lifecycleScope
 

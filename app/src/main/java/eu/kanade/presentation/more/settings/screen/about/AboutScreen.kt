@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.more.LogoHeader
@@ -57,6 +58,7 @@ import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.icons.CustomIcons
+import tachiyomi.presentation.core.util.collectAsState
 import eu.kanade.presentation.more.FeedbackSheet
 import eu.kanade.presentation.more.vytheraProjects
 import androidx.compose.material.icons.automirrored.outlined.Send
@@ -79,6 +81,9 @@ object AboutScreen : Screen() {
         val navigator = LocalNavigator.currentOrThrow
         var isCheckingUpdates by remember { mutableStateOf(false) }
         var showFeedback by remember { mutableStateOf(false) }
+        val basePreferences = remember { Injekt.get<BasePreferences>() }
+        val updateInterval by basePreferences.appUpdateIntervalDays.collectAsState()
+        var showUpdateInterval by remember { mutableStateOf(false) }
 
         Scaffold(
             topBar = { scrollBehavior ->
@@ -146,6 +151,13 @@ object AboutScreen : Screen() {
                             },
                         )
                     }
+                    groupItem(GroupPosition.Middle) {
+                        TextPreferenceWidget(
+                            title = stringResource(MR.strings.yomi_update_interval),
+                            subtitle = updateIntervalLabel(updateInterval),
+                            onPreferenceClick = { showUpdateInterval = true },
+                        )
+                    }
                 }
 
                 if (!BuildConfig.DEBUG) {
@@ -155,6 +167,13 @@ object AboutScreen : Screen() {
                             onPreferenceClick = { uriHandler.openUri(RELEASE_URL) },
                         )
                     }
+                }
+
+                groupItem(GroupPosition.Middle) {
+                    TextPreferenceWidget(
+                        title = stringResource(MR.strings.privacy_policy),
+                        onPreferenceClick = { uriHandler.openUri(Constants.URL_PRIVACY_POLICY) },
+                    )
                 }
 
                 groupItem(GroupPosition.Last) {
@@ -198,6 +217,16 @@ object AboutScreen : Screen() {
             }
         }
         if (showFeedback) FeedbackSheet(onDismissRequest = { showFeedback = false })
+        if (showUpdateInterval) {
+            UpdateIntervalDialog(
+                current = updateInterval,
+                onDismissRequest = { showUpdateInterval = false },
+                onConfirm = { days ->
+                    basePreferences.appUpdateIntervalDays.set(days)
+                    showUpdateInterval = false
+                },
+            )
+        }
     }
 
     /**

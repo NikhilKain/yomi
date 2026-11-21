@@ -50,6 +50,14 @@ class BasePreferences(
     // Yomi: save a report to the storage folder whenever the app crashes.
     val saveCrashLogs: Preference<Boolean> = preferenceStore.getBoolean("yomi_save_crash_logs", true)
 
+    // Yomi: how often to look for a new release on GitHub, in days (1, 7, 30 or a custom number).
+    val appUpdateIntervalDays: Preference<Int> = preferenceStore.getInt("yomi_app_update_interval_days", 7)
+
+    val lastAppUpdateCheck: Preference<Long> = preferenceStore.getLong(
+        Preference.appStateKey("yomi_last_app_update_check"),
+        0L,
+    )
+
     val donationCampaignShown: Preference<Boolean> = preferenceStore.getBoolean(
         Preference.appStateKey("donation_campaign_shown"),
         false,

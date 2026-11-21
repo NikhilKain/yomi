@@ -6,7 +6,7 @@
 
 **A manga, webtoon and comic reader for Android, redesigned in Material 3 Expressive.**
 
-Version **0.2.0** · `com.manga.yomi` · Android 8.0+
+Version **0.2.1** · `com.manga.yomi` · Android 8.0+
 
 [Download](https://github.com/NikhilKain/yomi/releases/latest) ·
 [Telegram](https://t.me/vythera_apps) ·
@@ -61,6 +61,15 @@ full reader.
   storage location, so you can attach it to a bug report. Nothing is sent anywhere by itself.
 - **Feedback from inside the app.** Report a bug, request a feature or send a message from Settings,
   About or You.
+- **Update checks.** Yomi looks for a new release on GitHub every day, week or month, or on a
+  custom schedule (*About → Check automatically*), and can download and install it for you.
+
+## Privacy
+
+No ads, no accounts and no third-party analytics. Yomi sends an anonymous check-in (a hashed
+device ID, device model, Android and app version, and how long the app is open) so Vythera can
+count how many devices use it. It never includes your library, history, sources, searches or
+accounts. Details are in [PRIVACY.md](PRIVACY.md).
 
 ## Download
 
