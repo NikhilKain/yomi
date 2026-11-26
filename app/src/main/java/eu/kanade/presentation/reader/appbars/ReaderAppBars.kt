@@ -77,6 +77,8 @@ fun ReaderAppBars(
     cropEnabled: Boolean,
     onClickCropBorder: () -> Unit,
     onClickSettings: () -> Unit,
+    autoScrolling: Boolean = false,
+    onClickAutoScroll: () -> Unit = {},
 ) {
     val backgroundColor = MaterialTheme.colorScheme.surfaceContainerHighest
         .copy(alpha = if (isSystemInDarkTheme()) 0.94f else 0.97f)
@@ -181,6 +183,8 @@ fun ReaderAppBars(
                     cropEnabled = cropEnabled,
                     onClickCropBorder = onClickCropBorder,
                     onClickSettings = onClickSettings,
+                    autoScrolling = autoScrolling,
+                    onClickAutoScroll = onClickAutoScroll,
                 )
             }
         }

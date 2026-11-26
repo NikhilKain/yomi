@@ -3,6 +3,8 @@ package eu.kanade.presentation.reader.appbars
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Pause
+import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.FilledTonalIconButton
@@ -28,6 +30,8 @@ fun ReaderBottomBar(
     onClickCropBorder: () -> Unit,
     onClickSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    autoScrolling: Boolean = false,
+    onClickAutoScroll: () -> Unit = {},
 ) {
     Row(
         modifier = modifier
@@ -53,6 +57,13 @@ fun ReaderBottomBar(
             Icon(
                 painter = painterResource(if (cropEnabled) R.drawable.ic_crop_24dp else R.drawable.ic_crop_off_24dp),
                 contentDescription = stringResource(MR.strings.pref_crop_borders),
+            )
+        }
+
+        FilledTonalIconButton(onClick = onClickAutoScroll) {
+            Icon(
+                imageVector = if (autoScrolling) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
+                contentDescription = stringResource(MR.strings.yomi_auto_scroll),
             )
         }
 

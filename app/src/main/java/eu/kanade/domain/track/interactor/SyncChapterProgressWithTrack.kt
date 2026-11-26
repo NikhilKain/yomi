@@ -1,6 +1,7 @@
 package eu.kanade.domain.track.interactor
 
 import eu.kanade.domain.track.model.toDbTrack
+import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.Tracker
 import logcat.LogPriority
@@ -16,6 +17,7 @@ class SyncChapterProgressWithTrack(
     private val updateChapter: UpdateChapter,
     private val insertTrack: InsertTrack,
     private val getChaptersByMangaId: GetChaptersByMangaId,
+    private val trackPreferences: TrackPreferences,
 ) {
 
     suspend fun await(
@@ -24,6 +26,7 @@ class SyncChapterProgressWithTrack(
         tracker: Tracker,
     ) {
         if (tracker !is EnhancedTracker) {
+            if (trackPreferences.syncProgressFromTrackers.get()) pullProgress(mangaId, remoteTrack)
             return
         }
 
@@ -44,6 +47,24 @@ class SyncChapterProgressWithTrack(
             tracker.update(updatedTrack.toDbTrack())
             updateChapter.awaitAll(chapterUpdates)
             insertTrack.await(updatedTrack)
+        } catch (e: Throwable) {
+            logcat(LogPriority.WARN, e)
+        }
+    }
+
+    /**
+     * Yomi: two-way sync for ordinary trackers. Chapters up to the tracker's progress become read
+     * here; nothing is marked unread, and local progress that is further along is left as it is
+     * (it reaches the tracker the usual way, when a chapter is read).
+     */
+    private suspend fun pullProgress(mangaId: Long, remoteTrack: Track) {
+        if (remoteTrack.lastChapterRead <= 0.0) return
+        val chapterUpdates = getChaptersByMangaId.await(mangaId)
+            .filter { it.isRecognizedNumber && !it.read && it.chapterNumber <= remoteTrack.lastChapterRead }
+            .map { it.copy(read = true).toChapterUpdate() }
+        if (chapterUpdates.isEmpty()) return
+        try {
+            updateChapter.awaitAll(chapterUpdates)
         } catch (e: Throwable) {
             logcat(LogPriority.WARN, e)
         }

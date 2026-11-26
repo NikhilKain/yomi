@@ -36,7 +36,8 @@ class LibraryPreferences(
         Preference.appStateKey("library_update_last_timestamp"),
         0L,
     )
-    val autoUpdateInterval: Preference<Int> = preferenceStore.getInt("pref_library_update_interval_key", 0)
+    // Yomi: check for new chapters once a day out of the box (on Wi-Fi, see below); "Never" stays available.
+    val autoUpdateInterval: Preference<Int> = preferenceStore.getInt("pref_library_update_interval_key", 24)
 
     val autoUpdateDeviceRestrictions: Preference<Set<String>> = preferenceStore.getStringSet(
         "library_update_restriction",
@@ -46,10 +47,9 @@ class LibraryPreferences(
     )
     val autoUpdateMangaRestrictions: Preference<Set<String>> = preferenceStore.getStringSet(
         "library_update_manga_restriction",
+        // Yomi: scheduled updates no longer skip series with unread chapters or not started yet.
         setOf(
-            MANGA_HAS_UNREAD,
             MANGA_NON_COMPLETED,
-            MANGA_NON_READ,
             MANGA_OUTSIDE_RELEASE_PERIOD,
         ),
     )
@@ -63,7 +63,8 @@ class LibraryPreferences(
 
     val markDuplicateReadChapterAsRead: Preference<Set<String>> = preferenceStore.getStringSet(
         "mark_duplicate_read_chapter_read",
-        emptySet(),
+        // Yomi: on by default; people expect a re-upload of a chapter they read to count as read.
+        setOf(MARK_DUPLICATE_CHAPTER_READ_EXISTING, MARK_DUPLICATE_CHAPTER_READ_NEW),
     )
 
     // region Filter

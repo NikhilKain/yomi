@@ -38,8 +38,8 @@ android {
         applicationId = if (yomiValidation) "com.manga.yomi.validation" else "com.manga.yomi"
 
         // A new release lineage: never upgrade the incompatible original Yomi database.
-        versionCode = if (yomiValidation) 43 else 3
-        versionName = "0.2.1"
+        versionCode = if (yomiValidation) 44 else 4
+        versionName = "0.2.2"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getLatestCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getLatestCommitSha()}\"")

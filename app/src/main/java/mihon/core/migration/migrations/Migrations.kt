@@ -11,4 +11,5 @@ val migrations: List<Migration>
         CategoryPreferencesCleanupMigration(),
         InstallationIdMigration(),
         VerticalNavigatorMigration(),
+        MarkDuplicateChaptersReadMigration(),
     )

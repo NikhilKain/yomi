@@ -29,6 +29,9 @@ class ReaderPreferences(
 
     val showPageNumber: Preference<Boolean> = preferenceStore.getBoolean("pref_show_page_number_key", true)
 
+    // Yomi: auto-scroll speed, 1 (slow) to 10 (fast).
+    val autoScrollSpeed: Preference<Int> = preferenceStore.getInt("yomi_reader_auto_scroll_speed", 4)
+
     val verticalNavigator: Preference<Set<ReadingMode>> = preferenceStore.getEnumSet(
         "pref_vertical_navigator",
         emptySet(),

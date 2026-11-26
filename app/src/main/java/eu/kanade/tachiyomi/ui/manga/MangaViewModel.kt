@@ -92,7 +92,7 @@ class MangaViewModel(
     private val mangaId: Long,
     private val isFromSource: Boolean,
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
-    trackPreferences: TrackPreferences = Injekt.get(),
+    private val trackPreferences: TrackPreferences = Injekt.get(),
     readerPreferences: ReaderPreferences = Injekt.get(),
     private val trackerManager: TrackerManager = Injekt.get(),
     private val trackChapter: TrackChapter = Injekt.get(),
@@ -290,6 +290,11 @@ class MangaViewModel(
 
                 if (manualFetch) {
                     downloadNewChapters(update.newChapters)
+                }
+
+                // Yomi: a manual refresh also brings in progress from trackers when that sync is on.
+                if (manualFetch && trackPreferences.syncProgressFromTrackers.get() && state.hasLoggedInTrackers) {
+                    viewModelScope.launchIO { refreshTrackers() }
                 }
             }
         } catch (_: CancellationException) {

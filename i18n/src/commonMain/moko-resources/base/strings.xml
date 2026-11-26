@@ -71,6 +71,11 @@
     <string name="yomi_app_hanami">A watch list for anime, series and films</string>
     <string name="yomi_app_auralis">Live, time-synced lyrics over any music app</string>
     <string name="yomi_app_relay">Files, clipboard and links between phone and computer</string>
+    <string name="yomi_sync_from_trackers">Sync progress from trackers</string>
+    <string name="yomi_sync_from_trackers_summary">When the library updates or you refresh a series, chapters up to your tracker\'s progress are marked read, so reading on another device carries over. Nothing is marked unread.</string>
+    <string name="yomi_auto_scroll">Auto-scroll</string>
+    <string name="yomi_auto_scroll_speed">Auto-scroll speed</string>
+    <string name="yomi_auto_scroll_on">Auto-scroll on. Tap the page to pause.</string>
     <string name="yomi_update_interval">Check automatically</string>
     <string name="yomi_update_interval_daily">Every day</string>
     <string name="yomi_update_interval_weekly">Every week</string>
@@ -294,7 +299,7 @@
     <string name="pref_library_summary">Categories, global update, chapter swipe</string>
     <string name="pref_reader_summary">Reading mode, display, navigation</string>
     <string name="pref_downloads_summary">Automatic download, download ahead</string>
-    <string name="pref_tracking_summary">One-way progress sync, enhanced sync</string>
+    <string name="pref_tracking_summary">Progress sync, trackers</string>
     <string name="pref_browse_summary">Sources, extensions, global search</string>
     <string name="pref_backup_summary">Manual &amp; automatic backups, storage space</string>
     <string name="pref_security_summary">App lock, secure screen</string>

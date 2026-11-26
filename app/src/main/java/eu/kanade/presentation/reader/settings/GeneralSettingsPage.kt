@@ -62,6 +62,15 @@ internal fun ColumnScope.GeneralPage(viewModel: ReaderSettingsViewModel) {
         pref = viewModel.preferences.showPageNumber,
     )
 
+    val autoScrollSpeed by viewModel.preferences.autoScrollSpeed.collectAsState()
+    SliderItem(
+        value = autoScrollSpeed,
+        valueRange = 1..10,
+        label = stringResource(MR.strings.yomi_auto_scroll_speed),
+        onChange = { viewModel.preferences.autoScrollSpeed.set(it) },
+        pillColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+    )
+
     val verticalNavigatorModes by viewModel.preferences.verticalNavigator.collectAsState()
 
     SettingsChipRow(MR.strings.pref_vertical_navigator) {

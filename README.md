@@ -6,7 +6,7 @@
 
 **A manga, webtoon and comic reader for Android, redesigned in Material 3 Expressive.**
 
-Version **0.2.1** · `com.manga.yomi` · Android 8.0+
+Version **0.2.2** · `com.manga.yomi` · Android 8.0+
 
 [Download](https://github.com/NikhilKain/yomi/releases/latest) ·
 [Telegram](https://t.me/vythera_apps) ·
@@ -63,6 +63,10 @@ full reader.
   About or You.
 - **Update checks.** Yomi looks for a new release on GitHub every day, week or month, or on a
   custom schedule (*About → Check automatically*), and can download and install it for you.
+- **Auto-scroll in the reader.** Webtoons glide down and paged modes turn pages on their own; set the
+  speed under *Reader settings → General*.
+- **Progress from your trackers.** Turn on *Settings → Tracking → Sync progress from trackers* and
+  chapters up to your AniList or MyAnimeList progress are marked read, so another device carries over.
 
 ## Privacy
 

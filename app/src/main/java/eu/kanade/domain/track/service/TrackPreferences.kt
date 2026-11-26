@@ -46,6 +46,10 @@ class TrackPreferences(
 
     val autoUpdateTrack: Preference<Boolean> = preferenceStore.getBoolean("pref_auto_update_manga_sync_key", true)
 
+    // Yomi: also pull progress from AniList, MyAnimeList and other trackers: chapters up to the tracker's
+    // progress are marked read here, so reading on another device carries over. Never marks anything unread.
+    val syncProgressFromTrackers: Preference<Boolean> = preferenceStore.getBoolean("yomi_sync_progress_from_trackers", false)
+
     val autoUpdateTrackOnMarkRead: Preference<AutoTrackState> = preferenceStore.getEnum(
         "pref_auto_update_manga_on_mark_read",
         AutoTrackState.ALWAYS,

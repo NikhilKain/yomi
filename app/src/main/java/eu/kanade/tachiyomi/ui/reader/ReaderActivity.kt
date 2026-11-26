@@ -13,6 +13,7 @@ import android.graphics.Paint
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
@@ -32,6 +33,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,7 +46,9 @@ import androidx.core.transition.doOnEnd
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.RecyclerView
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.google.android.material.transition.platform.MaterialContainerTransform
 import com.hippo.unifile.UniFile
@@ -77,7 +82,9 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderSettingsViewModel
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderProgressIndicator
+import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.R2LPagerViewer
+import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.system.isNightMode
 import eu.kanade.tachiyomi.util.system.openInBrowser
@@ -92,6 +99,9 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import logcat.LogPriority
 import tachiyomi.core.common.Constants
@@ -132,6 +142,10 @@ class ReaderActivity : BaseActivity() {
     private var config: ReaderConfig? = null
 
     private var menuToggleToast: Toast? = null
+
+    // Yomi: auto-scroll. Webtoon pages glide down; paged modes turn a page at a steady pace.
+    private var autoScrolling by mutableStateOf(false)
+    private var autoScrollJob: Job? = null
     private var readingModeToast: Toast? = null
     private val displayRefreshHost = DisplayRefreshHost()
 
@@ -521,7 +535,66 @@ class ReaderActivity : BaseActivity() {
                 menuToggleToast = toast(if (enabled) MR.strings.on else MR.strings.off)
             },
             onClickSettings = viewModel::openSettingsDialog,
+            autoScrolling = autoScrolling,
+            onClickAutoScroll = ::toggleAutoScroll,
         )
+    }
+
+    private fun toggleAutoScroll() {
+        if (autoScrolling) stopAutoScroll() else startAutoScroll()
+    }
+
+    private fun stopAutoScroll() {
+        autoScrollJob?.cancel()
+        autoScrollJob = null
+        autoScrolling = false
+    }
+
+    private fun startAutoScroll() {
+        autoScrollJob?.cancel()
+        autoScrolling = true
+        setMenuVisibility(false)
+        menuToggleToast?.cancel()
+        menuToggleToast = toast(MR.strings.yomi_auto_scroll_on)
+        autoScrollJob = lifecycleScope.launch {
+            var last = SystemClock.uptimeMillis()
+            var pendingPixels = 0f
+            var waitedMillis = 0L
+            while (isActive) {
+                delay(16)
+                val now = SystemClock.uptimeMillis()
+                val elapsed = (now - last).coerceAtMost(100)
+                last = now
+                // Paused while the menu or a dialog is open, or the reader is in the background.
+                val state = viewModel.state.value
+                if (state.menuVisible || state.dialog != null || !lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                    continue
+                }
+                val speed = readerPreferences.autoScrollSpeed.get().coerceIn(1, 10)
+                when (val viewer = state.viewer) {
+                    is WebtoonViewer -> {
+                        // Leave a drag or fling by the reader alone; carry on once it settles.
+                        if (viewer.recycler.scrollState != RecyclerView.SCROLL_STATE_IDLE) continue
+                        // 24 dp a second at speed 1, up to 240 dp at speed 10.
+                        pendingPixels += speed * 24f * resources.displayMetrics.density * elapsed / 1000f
+                        val dy = pendingPixels.toInt()
+                        if (dy > 0) {
+                            pendingPixels -= dy
+                            viewer.recycler.scrollBy(0, dy)
+                        }
+                    }
+                    is PagerViewer -> {
+                        // A page every 22 seconds at speed 1, down to every 4 seconds at speed 10.
+                        waitedMillis += elapsed
+                        if (waitedMillis >= (24 - speed * 2) * 1000L) {
+                            waitedMillis = 0
+                            viewer.moveToNext()
+                        }
+                    }
+                    else -> Unit
+                }
+            }
+        }
     }
 
     /**

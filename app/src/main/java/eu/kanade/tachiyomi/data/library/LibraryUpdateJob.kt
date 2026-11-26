@@ -18,6 +18,8 @@ import androidx.work.WorkInfo
 import androidx.work.WorkQuery
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import eu.kanade.domain.track.interactor.RefreshTracks
+import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
@@ -86,6 +88,8 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
     private val getLibraryManga: GetLibraryManga = Injekt.get()
     private val getManga: GetManga = Injekt.get()
     private val fetchInterval: FetchInterval = Injekt.get()
+    private val refreshTracks: RefreshTracks = Injekt.get()
+    private val trackPreferences: TrackPreferences = Injekt.get()
     private val filterChaptersForDownload: FilterChaptersForDownload = Injekt.get()
     private val updateMangaFromRemote: UpdateMangaFromRemote = Injekt.get()
 
@@ -114,7 +118,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         libraryPreferences.lastUpdatedTimestamp.set(Clock.System.now().toEpochMilliseconds())
 
         val categoryId = inputData.getLong(KEY_CATEGORY, -1L)
-        addMangaToQueue(categoryId)
+        addMangaToQueue(categoryId, manual = inputData.getBoolean(KEY_MANUAL, false))
 
         return withIOContext {
             try {
@@ -156,7 +160,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
      *
      * @param categoryId the ID of the category to update, or -1 if no category specified.
      */
-    private suspend fun addMangaToQueue(categoryId: Long) {
+    private suspend fun addMangaToQueue(categoryId: Long, manual: Boolean) {
         val libraryManga = getLibraryManga.await()
 
         val listToUpdate = if (categoryId != -1L) {
@@ -172,7 +176,11 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
             }
         }
 
+        // Yomi: an update someone starts by hand checks every title, so a series with unread chapters, one
+        // not started yet or one expected to release later still gets its new chapters. Only completed
+        // series (if that rule is on) and "fetch once" titles are left out. Scheduled updates keep every rule.
         val restrictions = libraryPreferences.autoUpdateMangaRestrictions.get()
+            .let { if (manual) it.intersect(setOf(MANGA_NON_COMPLETED)) else it }
         val skippedUpdates = mutableListOf<Pair<Manga, String?>>()
         val timeZone = TimeZone.currentSystemDefault()
         val (_, fetchWindowUpperBound) = fetchInterval.getWindow(
@@ -270,6 +278,11 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                                     try {
                                         val newChapters = updateManga(manga, fetchWindow)
                                             .sortedByDescending { it.sourceOrder }
+
+                                        // Yomi: bring in progress made on another device through a tracker.
+                                        if (trackPreferences.syncProgressFromTrackers.get()) {
+                                            runCatching { refreshTracks.await(manga.id) }
+                                        }
 
                                         if (newChapters.isNotEmpty()) {
                                             val chaptersToDownload = filterChaptersForDownload.await(manga, newChapters)
@@ -421,6 +434,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
          * Key for category to update.
          */
         private const val KEY_CATEGORY = "category"
+        private const val KEY_MANUAL = "manual"
 
         fun setupTask(
             context: Context,
@@ -486,6 +500,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
             val inputData = workDataOf(
                 KEY_CATEGORY to category?.id,
+                KEY_MANUAL to true,
             )
             val request = OneTimeWorkRequestBuilder<LibraryUpdateJob>()
                 .addTag(TAG)

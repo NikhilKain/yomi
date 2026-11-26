@@ -95,6 +95,19 @@ removeChaptersWithIds:
 DELETE FROM chapters
 WHERE _id IN :chapterIds;
 
+-- Yomi: mark unread uploads of a chapter number that is already read in the same series as read.
+markDuplicatesOfReadAsRead:
+UPDATE chapters
+SET read = 1
+WHERE read = 0
+AND chapter_number >= 0
+AND EXISTS (
+    SELECT 1 FROM chapters AS other
+    WHERE other.manga_id = chapters.manga_id
+    AND other.read = 1
+    AND other.chapter_number = chapters.chapter_number
+);
+
 resetIsSyncing:
 UPDATE chapters
 SET is_syncing = 0
